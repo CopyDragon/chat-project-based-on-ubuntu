@@ -8,8 +8,8 @@
 #include"HandleServer.h"
 
 
-void HandleServer::handle_all_request(){
-    
+void* HandleServer::handle_all_request(void *arg){
+    int conn=*(int *)arg;
     char buffer[1000];
     string name,pass;
     MYSQL *con=mysql_init(NULL);

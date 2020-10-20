@@ -19,12 +19,10 @@
 #include<netinet/in.h>
 using namespace std;
 class HandleServer{
-    private:
-        int conn;
-        sockaddr_in clnt_adr;
     public:
-        HandleServer(int sock,sockaddr_in adr):conn(sock),clnt_adr(adr){};
-        void handle_all_request();
+        static sockaddr_in clnt_adr;
+        HandleServer() {};
+        static void *handle_all_request(void *arg);
 
 };
 

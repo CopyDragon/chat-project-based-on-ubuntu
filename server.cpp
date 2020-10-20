@@ -9,6 +9,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<string.h>
+#include<vector>
 #include <arpa/inet.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
@@ -21,7 +22,6 @@ int main(){
     int serv_sock, clnt_sock;
     sockaddr_in serv_adr, clnt_adr;
     socklen_t clnt_adr_sz;
-    pthread_t t_id;
     pthread_mutex_t mutx;
 
     pthread_mutex_init(&mutx, NULL); //创建互斥锁
@@ -36,11 +36,19 @@ int main(){
     if (listen(serv_sock, 5) == -1)//连接队列大小为5
          cout<<"listen() error";
     
+    vector<int> sock_arr;//记录套接字描述符
     clnt_adr_sz = sizeof(clnt_adr);
-    int conn = accept(serv_sock, (struct sockaddr *)&clnt_adr, &clnt_adr_sz);
+    int conn;
+    pthread_t t_id;//线程id
 
-    HandleServer target(conn,clnt_adr);
-    target.handle_all_request();
+    while(conn = accept(serv_sock, (struct sockaddr *)&clnt_adr, &clnt_adr_sz)){
+        HandleServer target;
+        HandleServer::clnt_adr=clnt_adr;
+        sock_arr.push_back(conn);
+        pthread_create(&t_id, NULL, HandleServer::handle_all_request, (void *)&conn); 
+        pthread_detach(t_id);  
+    }
+
     /*
     MYSQL *con=mysql_init(NULL);
     mysql_real_connect(con,"localhost","fyl","123456","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
