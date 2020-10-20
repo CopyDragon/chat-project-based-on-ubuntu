@@ -41,15 +41,16 @@ int main(){
     cout<<" ------------------ \n\n";
     
     int choice;
-    cin>>choice;
     string name,pass,pass1;
     bool if_login=false;//记录是否登录成功
     string login_name;//记录成功登录的用户名
 
-    //登录
+    //开始处理各种事物
     while(1){
+        cin>>choice;
         if(choice==0)
             break;
+        //登录
         else if(choice==1&&!if_login){
             while(1){
                 cout<<"用户名:";
@@ -93,6 +94,7 @@ int main(){
             string str=name+pass;
             send(sock,str.c_str(),str.length(),0);
             cout<<"注册成功！\n";
+            cout<<"\n继续输入你要的选项:";     
         }
         //char sendbuf[1000];
         //while(1){
@@ -102,6 +104,7 @@ int main(){
         
         else if(if_login)
             break;
+
     }
     //登陆成功
     if(if_login){

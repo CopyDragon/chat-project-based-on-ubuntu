@@ -1,52 +1,19 @@
 /*************************************************************************
-	> File Name: server.cpp
+	> File Name: handle_server.cpp
 	> Author: 
 	> Mail: 
-	> Created Time: Sun Oct 18 16:06:56 2020
+	> Created Time: Tue Oct 20 16:11:22 2020
  ************************************************************************/
 
-#include<iostream>
-#include<stdlib.h>
-#include<unistd.h>
-#include<string.h>
-#include <arpa/inet.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<mysql/mysql.h>
-#include<pthread.h>
-#include "HandleServer.h"
-using namespace std;
+#include"HandleServer.h"
 
-int main(){
-    int serv_sock, clnt_sock;
-    sockaddr_in serv_adr, clnt_adr;
-    socklen_t clnt_adr_sz;
-    pthread_t t_id;
-    pthread_mutex_t mutx;
 
-    pthread_mutex_init(&mutx, NULL); //创建互斥锁
-    serv_sock = socket(PF_INET, SOCK_STREAM, 0);//PF_INET:tcp/ip协议   SOCK_STREAM: tcp    0:默认协议
-    memset(&serv_adr, 0, sizeof(serv_adr));
-    serv_adr.sin_family = AF_INET;//使用地址族
-    serv_adr.sin_addr.s_addr = inet_addr("172.29.18.134");//ip地址
-    serv_adr.sin_port = 8000;//端口号
-
-    if (bind(serv_sock, (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
-         cout<<"bind() error";
-    if (listen(serv_sock, 5) == -1)//连接队列大小为5
-         cout<<"listen() error";
+void HandleServer::handle_all_request(){
     
-    clnt_adr_sz = sizeof(clnt_adr);
-    int conn = accept(serv_sock, (struct sockaddr *)&clnt_adr, &clnt_adr_sz);
-
-    HandleServer target(conn,clnt_adr);
-    target.handle_all_request();
-    /*
-    MYSQL *con=mysql_init(NULL);
-    mysql_real_connect(con,"localhost","fyl","123456","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
-
     char buffer[1000];
     string name,pass;
+    MYSQL *con=mysql_init(NULL);
+    mysql_real_connect(con,"localhost","fyl","123456","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
     while(1){
         memset(buffer,0,sizeof(buffer));
         int len = recv(conn, buffer, sizeof(buffer),0);
@@ -68,11 +35,15 @@ int main(){
             search+="\";";
             cout<<endl<<"sql语句:"<<search<<endl;
             auto search_res=mysql_query(con,search.c_str());
-            if(search_res==0){
+            auto result=mysql_store_result(con);
+            int col=mysql_num_fields(result);//获取列数
+            int row=mysql_num_rows(result);//获取行数
+            //auto info=mysql_fetch_row(result);//获取一行的信息
+            if(search_res==0&&row!=0){
                 cout<<"查询成功\n";
-                auto result=mysql_store_result(con);
-                int col=mysql_num_fields(result);//获取列数
-                int row=mysql_num_rows(result);//获取行数
+                //auto result=mysql_store_result(con);
+                //int col=mysql_num_fields(result);//获取列数
+                //int row=mysql_num_rows(result);//获取行数
                 auto info=mysql_fetch_row(result);//获取一行的信息
                 cout<<"查询到用户名:"<<info[0]<<" 密码:"<<info[1]<<endl;
                 if(info[1]==pass){
@@ -105,7 +76,9 @@ int main(){
             search+="\");";
             cout<<endl<<"sql语句:"<<search<<endl;
             mysql_query(con,search.c_str());
-        }   
-    } 
-    mysql_close(con);*/
+        }  
+    }  
+    mysql_close(con);
+    close(conn);
 }
+
