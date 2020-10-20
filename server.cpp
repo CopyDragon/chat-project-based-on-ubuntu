@@ -62,20 +62,33 @@ int main(){
             string search="SELECT * FROM user WHERE NAME=\"";
             search+=name;
             search+="\";";
-            cout<<search<<endl;
+            cout<<endl<<"sql语句:"<<search<<endl;
             auto search_res=mysql_query(con,search.c_str());
-            if(search_res==0)
+            if(search_res==0){
                 cout<<"查询成功\n";
-            else
+                auto result=mysql_store_result(con);
+                int col=mysql_num_fields(result);//获取列数
+                int row=mysql_num_rows(result);//获取行数
+                auto info=mysql_fetch_row(result);//获取一行的信息
+                cout<<"查询到用户名:"<<info[0]<<" 密码:"<<info[1]<<endl;
+                if(info[1]==pass){
+                    cout<<"登录密码正确\n";
+                    char str1[100]="ok";
+                    send(conn,str1,strlen(str1),0);
+                }
+                else{
+                    cout<<"登录密码错误\n";
+                    char str1[100]="wrong";
+                    send(conn,str1,strlen(str1),0);
+                }   
+            }
+            else{
                 cout<<"查询失败\n";
-            auto result=mysql_store_result(con);
-            int col=mysql_num_fields(result);
-            int row=mysql_num_rows(result);
-            auto info=mysql_fetch_row(result);
-            cout<<info[0]<<" "<<info[1]<<endl;
-            if(info[1]==pass)
-                cout<<"密码正确";
+                char str1[100]="wrong";
+                send(conn,str1,strlen(str1),0);
+            }
         }
+
         //注册
         else if(str.find("name:")!=str.npos){
             int p1=str.find("name:"),p2=str.find("pass:");
@@ -86,10 +99,9 @@ int main(){
             search+="\",\"";
             search+=pass;
             search+="\");";
-            //cout<<search<<endl;
+            cout<<endl<<"sql语句:"<<search<<endl;
             mysql_query(con,search.c_str());
         }   
-        break;
     }   
     mysql_close(con);
 }

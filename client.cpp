@@ -34,6 +34,7 @@ int main(){
     cout<<" ------------------\n";
     cout<<"|                  |\n";
     cout<<"| 请输入你要的选项:|\n";
+    cout<<"|    0:退出        |\n";
     cout<<"|    1:登录        |\n";
     cout<<"|    2:注册        |\n";
     cout<<"|                  |\n";
@@ -42,51 +43,79 @@ int main(){
     int choice;
     cin>>choice;
     string name,pass,pass1;
+    bool if_login=false;//记录是否登录成功
+    string login_name;//记录成功登录的用户名
+
     //登录
-    if(choice==1){
-        while(1){
-        cout<<"用户名:";
-        cin>>name;
-        cout<<"密码:";
-        cin>>pass;
-        string str="login"+name;
-        str+="pass:";
-        str+=pass;
-        send(sock,str.c_str(),str.length(),0);//发送登录信息
-        char buffer[1000];
-        memset(buffer,0,sizeof(buffer));
-        recv(sock,buffer,sizeof(buffer),0);//接收响应
-        string recv_str(buffer);
-        if(recv_str=="ok")
-            cout<<"登陆成功\n\n";
-        else
-            cout<<"密码或用户名错误！\n\n";
-        }   
-    }
-    //注册
-    else if(choice==2){
-        cout<<"注册的用户名:";
-        cin>>name;
-        while(1){
-            cout<<"密码:";
-            cin>>pass;
-            cout<<"确认密码:";
-            cin>>pass1;
-            if(pass==pass1)
-                break;
-            else
-                cout<<"两次密码不一致!\n\n";
-        }   
-        name="name:"+name;
-        pass="pass:"+pass;
-        string str=name+pass;
-        send(sock,str.c_str(),str.length(),0);
-        cout<<"注册成功！\n";
-    }
-    //char sendbuf[1000];
-    //while(1){
-    //    cin>>sendbuf;
-    //    send(sock, sendbuf, strlen(sendbuf),0); 
-    //}       
+    while(1){
+        if(choice==0)
+            break;
+        else if(choice==1&&!if_login){
+            while(1){
+                cout<<"用户名:";
+                cin>>name;
+                cout<<"密码:";
+                cin>>pass;
+                string str="login"+name;
+                str+="pass:";
+                str+=pass;
+                send(sock,str.c_str(),str.length(),0);//发送登录信息
+                char buffer[1000];
+                memset(buffer,0,sizeof(buffer));
+                recv(sock,buffer,sizeof(buffer),0);//接收响应
+                string recv_str(buffer);
+                if(recv_str=="ok"){
+                    if_login=true;
+                    login_name=name;
+                    cout<<"登陆成功\n\n";
+                    break;
+                }
+                else
+                    cout<<"密码或用户名错误！\n\n";
+            }       
+        }
+        //注册
+        else if(choice==2){
+            cout<<"注册的用户名:";
+            cin>>name;
+            while(1){
+                cout<<"密码:";
+                cin>>pass;
+                cout<<"确认密码:";
+                cin>>pass1;
+                if(pass==pass1)
+                    break;
+                else
+                    cout<<"两次密码不一致!\n\n";
+            }   
+            name="name:"+name;
+            pass="pass:"+pass;
+            string str=name+pass;
+            send(sock,str.c_str(),str.length(),0);
+            cout<<"注册成功！\n";
+        }
+        //char sendbuf[1000];
+        //while(1){
+        //    cin>>sendbuf;
+        //    send(sock, sendbuf, strlen(sendbuf),0); 
+        //}       
         
+        else if(if_login)
+            break;
+    }
+    //登陆成功
+    if(if_login){
+        system("clear");
+        cout<<"        欢迎回来,"<<login_name<<endl;
+        cout<<" -------------------------------------------\n";
+        cout<<"|                                           |\n";
+        cout<<"|          请选择你要的选项：               |\n";
+        cout<<"|              0:退出                       |\n";
+        cout<<"|              1:查看好友列表               |\n";
+        cout<<"|              2:添加新好友                 |\n";
+        cout<<"|              3:发起单独聊天               |\n";
+        cout<<"|              4:发起群聊                   |\n";
+        cout<<"|                                           |\n";
+        cout<<" ------------------------------------------- \n";
+    }
 }
