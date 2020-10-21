@@ -102,7 +102,7 @@ int main(){
         //    send(sock, sendbuf, strlen(sendbuf),0); 
         //}       
         
-        else if(if_login)
+        if(if_login)
             break;
 
     }

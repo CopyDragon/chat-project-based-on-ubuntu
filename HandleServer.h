@@ -18,12 +18,9 @@
 #include<mysql/mysql.h>
 #include<netinet/in.h>
 using namespace std;
-class HandleServer{
-    public:
-        static sockaddr_in clnt_adr;
-        HandleServer() {};
-        static void *handle_all_request(void *arg);
 
-};
+//线程执行此函数，处理请求
+void *handle_all_request(void *arg);
+
 
 #endif

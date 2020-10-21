@@ -8,7 +8,7 @@
 #include"HandleServer.h"
 
 
-void* HandleServer::handle_all_request(void *arg){
+void* handle_all_request(void *arg){
     int conn=*(int *)arg;
     char buffer[1000];
     string name,pass;
@@ -23,7 +23,7 @@ void* HandleServer::handle_all_request(void *arg){
             continue;
 
         string str(buffer);
-        cout<<"用户"<<inet_ntoa(clnt_adr.sin_addr)<<"正在连接";
+        //cout<<"用户"<<inet_ntoa(clnt_adr.sin_addr)<<"正在连接";
 
         //登录
         if(str.find("login")!=str.npos){
