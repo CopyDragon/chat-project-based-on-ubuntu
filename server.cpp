@@ -14,11 +14,16 @@
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<mysql/mysql.h>
+#include<unordered_map>
 #include<pthread.h>
 #include "HandleServer.h"
+#include "global.h"
 using namespace std;
 
 extern void *handle_all_request(void *);
+
+//unordered_map<pair<int,string>,pair<int,string>> from_to_map;//记录源用户、目的用户
+extern unordered_map<string,int> name_sock_map;//记录名字和套接字描述符
 
 int main(){
     int serv_sock, clnt_sock;

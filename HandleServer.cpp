@@ -6,12 +6,18 @@
  ************************************************************************/
 
 #include"HandleServer.h"
+#include"global.h"
 
+//extern unordered_map<pair<int,string>,pair<int,string>> from_to_map;//记录目标用户、源用户
+extern unordered_map<string,int> name_sock_map;//名字和套接字描述符
 
 void* handle_all_request(void *arg){
     int conn=*(int *)arg;
+    int target_conn;
     char buffer[1000];
     string name,pass;
+    bool if_login=false;//记录当前服务对象是否成功登录
+    string login_name;//记录当前服务对象的名字
     MYSQL *con=mysql_init(NULL);
     mysql_real_connect(con,"localhost","fyl","123456","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
     while(1){
@@ -49,6 +55,9 @@ void* handle_all_request(void *arg){
                 if(info[1]==pass){
                     cout<<"登录密码正确\n";
                     char str1[100]="ok";
+                    if_login=true;
+                    login_name=name;
+                    name_sock_map[name]=conn;//记录下名字和文件描述符的对应关系
                     send(conn,str1,strlen(str1),0);
                 }
                 else{
@@ -76,7 +85,28 @@ void* handle_all_request(void *arg){
             search+="\");";
             cout<<endl<<"sql语句:"<<search<<endl;
             mysql_query(con,search.c_str());
-        }  
+        } 
+        
+        //绑定源用户和目的用户
+        else if(str.find("target:")!=str.npos){
+            int pos1=str.find("from");
+            string target=str.substr(7,pos1-7),from=str.substr(pos1+4);
+            //pair<string,int> tmp1(from,name_sock_map[from]);
+            //pair<string,int> tmp2(target,name_sock_map[target]);
+            //from_to_map[tmp1]=tmp2;
+            target_conn=name_sock_map[target];
+        }
+
+        //接收到消息，转发
+        else if(str.find("content:")!=str.npos){
+            char recv_buff[1000];
+            memset(recv_buff,0,sizeof(recv_buff));
+            int len=recv(conn,recv_buff,sizeof(recv_buff),0);
+            string recv_str(recv_buff);
+            string send_str=recv_str.substr(7);
+            send(target_conn,send_str.c_str(),send_str.length(),0);
+        }
+
     }  
     mysql_close(con);
     close(conn);

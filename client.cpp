@@ -16,7 +16,13 @@
 #include <fcntl.h>
 #include <sys/shm.h>
 #include<iostream>
+#include "HandleClient.h"
 using namespace std;
+
+extern void *hand_recv(void *arg);
+
+extern void *handle_send(void *arg);
+
 int main(){
     int sock;
     struct sockaddr_in serv_addr;
@@ -114,11 +120,25 @@ int main(){
         cout<<"|                                           |\n";
         cout<<"|          请选择你要的选项：               |\n";
         cout<<"|              0:退出                       |\n";
-        cout<<"|              1:查看好友列表               |\n";
-        cout<<"|              2:添加新好友                 |\n";
-        cout<<"|              3:发起单独聊天               |\n";
-        cout<<"|              4:发起群聊                   |\n";
+        cout<<"|              1:发起单独聊天               |\n";
+        cout<<"|              2:发起群聊                   |\n";
         cout<<"|                                           |\n";
-        cout<<" ------------------------------------------- \n";
+        cout<<" ------------------------------------------- \n\n";
     }
+    cin>>choice;
+    pthread_t send_t,recv_t;//线程ID
+    void *thread_return;
+    if(choice==1){
+        cout<<"请输入对方的用户名:";
+        string target_name,content;
+        cin>>target_name;
+        string sendstr("target:"+target_name+"from:"+login_name);//标识目标用户+源用户
+        send(sock,sendstr.c_str(),sendstr.length(),0);//先向服务器发送目标用户、源用户
+        cout<<"请输入你想说的话(输入exit退出)：\n";
+        pthread_create(&send_t,NULL,handle_send,(void *)&sock);//创建发送线程
+        pthread_create(&recv_t,NULL,handle_recv,(void *)&sock);//创建接收线程
+        pthread_join(send_t,&thread_return);
+        pthread_join(recv_t,&thread_return);
+    }
+
 }
