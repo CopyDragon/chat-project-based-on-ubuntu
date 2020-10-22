@@ -87,7 +87,7 @@ void* handle_all_request(void *arg){
             mysql_query(con,search.c_str());
         } 
         
-        //绑定源用户和目的用户
+        //设定目标的文件描述符
         else if(str.find("target:")!=str.npos){
             int pos1=str.find("from");
             string target=str.substr(7,pos1-7),from=str.substr(pos1+4);
@@ -99,11 +99,11 @@ void* handle_all_request(void *arg){
 
         //接收到消息，转发
         else if(str.find("content:")!=str.npos){
-            char recv_buff[1000];
-            memset(recv_buff,0,sizeof(recv_buff));
-            int len=recv(conn,recv_buff,sizeof(recv_buff),0);
-            string recv_str(recv_buff);
-            string send_str=recv_str.substr(7);
+            //char recv_buff[1000];
+            //memset(recv_buff,0,sizeof(recv_buff));
+            //int len=recv(conn,recv_buff,sizeof(recv_buff),0);
+            string recv_str(str);
+            string send_str=recv_str.substr(8);
             send(target_conn,send_str.c_str(),send_str.length(),0);
         }
 

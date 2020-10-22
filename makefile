@@ -1,5 +1,5 @@
-server:
-	g++ -o server global.cpp HandleClient.h server.cpp HandleServer.cpp HandleServer.h HandleClient.cpp   -lmysqlclient -lpthread
+target:
+	g++ -o server server.cpp HandleServer.cpp HandleClient.cpp global.cpp  -lmysqlclient -lpthread
 	g++ -o client client.cpp HandleClient.cpp -lpthread
 clean:
 	rm server
