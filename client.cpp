@@ -129,6 +129,8 @@ int main(){
         cin>>choice;
         pthread_t send_t,recv_t;//线程ID
         void *thread_return;
+        if(choice==0)
+            break;
         if(choice==1){
             cout<<"请输入对方的用户名:";
             string target_name,content;
