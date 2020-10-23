@@ -51,7 +51,7 @@ int main(){
     while(conn = accept(serv_sock, (struct sockaddr *)&clnt_adr, &clnt_adr_sz)){
         //HandleServer target;
         //HandleServer::clnt_adr=clnt_adr;
-        cout<<"用户"<<inet_ntoa(clnt_adr.sin_addr)<<"正在连接\n";
+        cout<<"用户"<<inet_ntoa(clnt_adr.sin_addr)<<"正在连接:\n";
         sock_arr.push_back(conn);
         pthread_create(&t_id, NULL, handle_all_request, (void *)&conn); 
         pthread_detach(t_id);  

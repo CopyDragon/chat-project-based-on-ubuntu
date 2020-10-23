@@ -12,15 +12,19 @@
 extern unordered_map<string,int> name_sock_map;//名字和套接字描述符
 
 void* handle_all_request(void *arg){
+    pthread_mutex_t mutx;//互斥锁，锁住需要修改name_sock_map的临界区
+    pthread_mutex_init(&mutx, NULL); //创建互斥锁
     int conn=*(int *)arg;
-    int target_conn;
+    int target_conn=-1;
     char buffer[1000];
     string name,pass;
     bool if_login=false;//记录当前服务对象是否成功登录
     string login_name;//记录当前服务对象的名字
+    string target_name;//记录发送信息时目标用户的名字
     MYSQL *con=mysql_init(NULL);
     mysql_real_connect(con,"localhost","fyl","123456","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
     while(1){
+        cout<<"-----------------------------\n";
         memset(buffer,0,sizeof(buffer));
         int len = recv(conn, buffer, sizeof(buffer),0);
 
@@ -39,7 +43,7 @@ void* handle_all_request(void *arg){
             string search="SELECT * FROM user WHERE NAME=\"";
             search+=name;
             search+="\";";
-            cout<<endl<<"sql语句:"<<search<<endl;
+            cout<<"sql语句:"<<search<<endl;
             auto search_res=mysql_query(con,search.c_str());
             auto result=mysql_store_result(con);
             int col=mysql_num_fields(result);//获取列数
@@ -57,7 +61,9 @@ void* handle_all_request(void *arg){
                     char str1[100]="ok";
                     if_login=true;
                     login_name=name;
+                    pthread_mutex_lock(&mutx); //上锁
                     name_sock_map[name]=conn;//记录下名字和文件描述符的对应关系
+                    pthread_mutex_unlock(&mutx); //解锁
                     send(conn,str1,strlen(str1),0);
                 }
                 else{
@@ -94,16 +100,35 @@ void* handle_all_request(void *arg){
             //pair<string,int> tmp1(from,name_sock_map[from]);
             //pair<string,int> tmp2(target,name_sock_map[target]);
             //from_to_map[tmp1]=tmp2;
-            target_conn=name_sock_map[target];
+            target_name=target;
+            if(name_sock_map.find(target)==name_sock_map.end())
+                cout<<"源用户为"<<login_name<<",目标用户"<<target_name<<"仍未登陆，无法发起私聊\n";
+            else{
+                cout<<"源用户"<<login_name<<"向目标用户"<<target_name<<"发起的私聊即将建立";
+                cout<<",目标用户的套接字描述符为"<<name_sock_map[target]<<endl;
+                target_conn=name_sock_map[target];
+            }       
         }
 
         //接收到消息，转发
         else if(str.find("content:")!=str.npos){
+            if(target_conn==-1){
+                cout<<"找不到目标用户"<<target_name<<"的套接字，将尝试重新寻找目标用户的套接字\n";
+                if(name_sock_map.find(target_name)!=name_sock_map.end()){
+                    target_conn=name_sock_map[target_name];
+                    cout<<"重新查找目标用户套接字成功\n";
+                }
+                else{
+                    cout<<"查找仍然失败，转发失败！\n";
+                    continue;
+                }
+            }
             //char recv_buff[1000];
             //memset(recv_buff,0,sizeof(recv_buff));
             //int len=recv(conn,recv_buff,sizeof(recv_buff),0);
             string recv_str(str);
             string send_str=recv_str.substr(8);
+            cout<<"用户"<<login_name<<"向"<<target_name<<"发送:"<<send_str<<endl;
             send(target_conn,send_str.c_str(),send_str.length(),0);
         }
 

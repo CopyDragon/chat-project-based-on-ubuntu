@@ -144,5 +144,6 @@ int main(){
             //pthread_join(recv_t,&thread_return);
             pthread_cancel(send_t);
         }    
-    }   
+    } 
+    close(sock);
 }
