@@ -1,0 +1,59 @@
+commit 24718299176e71a2e2d411d16ced1a944910f814
+Author: fyl <838106527@qq.com>
+Date:   Fri Oct 23 19:53:51 2020 +0800
+
+     修复了试图连接未登录用户的bug，增加了服务器的各项提示信息，重新编写了makefile (10.23)
+
+commit cbd0a2066482b86957499f649bbb07af6c622307
+Author: fyl <838106527@qq.com>
+Date:   Thu Oct 22 13:00:41 2020 +0800
+
+     注册+登录+私聊，无bug (10.22)
+
+commit ae7aa90adaee78c8e49dc90d8963af14a3962c2d
+Author: fyl <838106527@qq.com>
+Date:   Thu Oct 22 11:24:35 2020 +0800
+
+     增加了输入exit结束聊天线程的功能 (10.22)
+
+commit e0ac441170b2c4f7f1dbd503a391bef0e91186ad
+Author: fyl <838106527@qq.com>
+Date:   Wed Oct 21 20:39:10 2020 +0800
+
+     添加了单独聊天功能，仍有bug (10.21)
+
+commit bfdae04afefe637bc556de5a00e2de2d8952495d
+Author: fyl <838106527@qq.com>
+Date:   Wed Oct 21 13:16:45 2020 +0800
+
+     完成服务器多线程处理 10.21
+
+commit 2e3e6660f5009a4733a3fd0c83cd63332d7670fd
+Author: fyl <838106527@qq.com>
+Date:   Tue Oct 20 21:39:12 2020 +0800
+
+    尝试为服务器添加多线程，未完成 10.20
+
+commit 522da0752ad21f5ca8c3d6c542434545e3ca114c
+Author: fyl <838106527@qq.com>
+Date:   Tue Oct 20 18:01:26 2020 +0800
+
+    注册+登录，增加了服务端的类封装 10.20
+
+commit 668603a9bfca02710e068694170399b58ace922d
+Author: fyl <838106527@qq.com>
+Date:   Tue Oct 20 12:47:09 2020 +0800
+
+    注册+登录（已完成） 10.20
+
+commit 417d9b779ab09e662b88f45151c7d612eff33f96
+Author: fyl <838106527@qq.com>
+Date:   Mon Oct 19 18:37:27 2020 +0800
+
+    注册（已完成）+登录（未完成）  10.19
+
+commit 7d2b625e6c39ea40dfe02ef300b38dec67e6d2d2
+Author: fyl <838106527@qq.com>
+Date:   Sun Oct 18 18:40:14 2020 +0800
+
+    测试tcp通信+数据库连接(10.18)
