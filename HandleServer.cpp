@@ -10,7 +10,7 @@
 
 //extern unordered_map<pair<int,string>,pair<int,string>> from_to_map;//记录目标用户、源用户
 extern unordered_map<string,int> name_sock_map;//名字和套接字描述符
-extern unordered_map<int,vector<int>> group_map;//记录群号和套接字描述符集合
+extern unordered_map<int,set<int>> group_map;//记录群号和套接字描述符集合
 
 void* handle_all_request(void *arg){
     pthread_mutex_t mutx;//互斥锁，锁住需要修改name_sock_map的临界区
@@ -144,7 +144,8 @@ void* handle_all_request(void *arg){
             group_num=stoi(num_str);
             cout<<"用户"<<login_name<<"绑定群聊号为："<<num_str<<endl;
             pthread_mutex_lock(&group_mutx);//上锁
-            group_map[group_num].push_back(conn);
+            //group_map[group_num].push_back(conn);
+            group_map[group_num].insert(conn);
             pthread_mutex_unlock(&group_mutx);//解锁
         }
 
