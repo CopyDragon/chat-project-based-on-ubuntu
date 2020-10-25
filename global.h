@@ -9,8 +9,10 @@
 #define _GLOBAL_H
 
 #include<unordered_map>
+#include<vector>
 using namespace std;
 
 extern unordered_map<string,int> name_sock_map;//记录名字和文件描述符
+extern unordered_map<int,vector<int>> group_map;//记录群号和对应的文件描述符集合
 
 #endif

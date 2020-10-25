@@ -19,7 +19,7 @@ void *handle_recv(void *arg){
         if(len==-1)
             break;
         string str(recv_buffer);
-        cout<<"对方:"<<str<<endl;
+        cout<<str<<endl;
     }
 }
 
@@ -30,8 +30,14 @@ void *handle_send(void *arg){
         cin>>str;
         if(str=="exit")
             break;
-        str="content:"+str;
-        send(sock,str.c_str(),str.length(),0);
+        if(sock>0){
+            str="content:"+str;
+            send(sock,str.c_str(),str.length(),0);
+        }
+        else if(sock<0){
+            str="gr_message:"+str;
+            send(-sock,str.c_str(),str.length(),0);
+        }   
     }   
 }
 

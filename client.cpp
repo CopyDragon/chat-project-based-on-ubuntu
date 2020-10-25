@@ -144,6 +144,19 @@ int main(){
             //pthread_join(recv_t,&thread_return);
             pthread_cancel(send_t);
         }    
+        if(choice==2){
+            cout<<"请输入群号:";
+            int num;
+            cin>>num;
+            string sendstr("group:"+to_string(num));
+            send(sock,sendstr.c_str(),sendstr.length(),0);
+            cout<<"请输入你想说的话(输入exit退出)：\n";
+            int sock1=-sock;
+            auto send_thread=pthread_create(&send_t,NULL,handle_send,(void *)&sock1);//创建发送线程
+            auto recv_thread=pthread_create(&recv_t,NULL,handle_recv,(void *)&sock);//创建接收线程
+            pthread_join(send_t,&thread_return);
+            pthread_cancel(send_t);
+        }
     } 
     close(sock);
 }

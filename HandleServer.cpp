@@ -10,10 +10,13 @@
 
 //extern unordered_map<pair<int,string>,pair<int,string>> from_to_map;//记录目标用户、源用户
 extern unordered_map<string,int> name_sock_map;//名字和套接字描述符
+extern unordered_map<int,vector<int>> group_map;//记录群号和套接字描述符集合
 
 void* handle_all_request(void *arg){
     pthread_mutex_t mutx;//互斥锁，锁住需要修改name_sock_map的临界区
+    pthread_mutex_t group_mutx;//互斥锁，锁住修改group_map的临界区
     pthread_mutex_init(&mutx, NULL); //创建互斥锁
+    pthread_mutex_init(&group_mutx,NULL);//创建互斥锁
     int conn=*(int *)arg;
     int target_conn=-1;
     char buffer[1000];
@@ -21,6 +24,7 @@ void* handle_all_request(void *arg){
     bool if_login=false;//记录当前服务对象是否成功登录
     string login_name;//记录当前服务对象的名字
     string target_name;//记录发送信息时目标用户的名字
+    int group_num;//记录群号
     MYSQL *con=mysql_init(NULL);
     mysql_real_connect(con,"localhost","fyl","123456","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
     while(1){
@@ -129,9 +133,32 @@ void* handle_all_request(void *arg){
             string recv_str(str);
             string send_str=recv_str.substr(8);
             cout<<"用户"<<login_name<<"向"<<target_name<<"发送:"<<send_str<<endl;
+            send_str="["+login_name+"]:"+send_str;
             send(target_conn,send_str.c_str(),send_str.length(),0);
         }
+        
+        //绑定群聊号
+        else if(str.find("group:")!=str.npos){
+            string recv_str(str);
+            string num_str=recv_str.substr(6);
+            group_num=stoi(num_str);
+            cout<<"用户"<<login_name<<"绑定群聊号为："<<num_str<<endl;
+            pthread_mutex_lock(&group_mutx);//上锁
+            group_map[group_num].push_back(conn);
+            pthread_mutex_unlock(&group_mutx);//解锁
+        }
 
+        //广播群聊信息
+        else if(str.find("gr_message:")!=str.npos){
+            string send_str(str);
+            send_str=send_str.substr(11);
+            send_str="["+login_name+"]:"+send_str;
+            cout<<"群聊信息："<<send_str<<endl;
+            for(auto i:group_map[group_num]){
+                if(i!=conn)
+                    send(i,send_str.c_str(),send_str.length(),0);
+            }       
+        }
     }  
     mysql_close(con);
     close(conn);

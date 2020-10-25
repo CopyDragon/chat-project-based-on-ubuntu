@@ -8,3 +8,4 @@
 #include "global.h"
 
 unordered_map<string,int> name_sock_map;
+unordered_map<int,vector<int>> group_map;
