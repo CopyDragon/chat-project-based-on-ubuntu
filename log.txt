@@ -1,3 +1,33 @@
+commit 5f46967a9733ad1c37509e33c3177326c1ffe7d7
+Author: fyl <838106527@qq.com>
+Date:   Wed Dec 9 16:11:25 2020 +0800
+
+    2020.12.9：新增了使用redis保存session对象记录登录状态的功能
+
+commit a19092860935def72ff55ac54c2439dbe75776cb
+Author: fyl <838106527@qq.com>
+Date:   Mon Oct 26 15:41:25 2020 +0800
+
+    修改了readme (10.26)
+
+commit ff977c1eb41117b40ce371e7e051a9ab971c92c0
+Author: fyl <838106527@qq.com>
+Date:   Mon Oct 26 15:35:51 2020 +0800
+
+     删掉test_client.sh
+
+commit 33176d35b527b557c8f89e672a8bc6676afdcd48
+Author: fyl <838106527@qq.com>
+Date:   Sun Oct 25 21:43:47 2020 +0800
+
+     将保存一个群里的文件描述符的数据结构从vector改为set (10.25)
+
+commit 37117c75043d0d9e23f13dbe7ca03b03c1a911cd
+Author: fyl <838106527@qq.com>
+Date:   Sun Oct 25 18:46:39 2020 +0800
+
+     导出了log.txt日志 (10.25)
+
 commit 45aa044e715f39027385cdda9ccd9efbaa5ad1a7
 Author: fyl <838106527@qq.com>
 Date:   Sun Oct 25 18:45:09 2020 +0800
