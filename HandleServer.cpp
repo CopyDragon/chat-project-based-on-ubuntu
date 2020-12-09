@@ -25,22 +25,54 @@ void* handle_all_request(void *arg){
     string login_name;//记录当前服务对象的名字
     string target_name;//记录发送信息时目标用户的名字
     int group_num;//记录群号
+
+    //连接MYSQL数据库
     MYSQL *con=mysql_init(NULL);
-    mysql_real_connect(con,"localhost","fyl","123456","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
+    mysql_real_connect(con,"127.0.0.1","root","","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
+    
+    //连接redis数据库(2020.12.9)
+    redisContext *redis_target = redisConnect("127.0.0.1",6379);
+    if(redis_target->err){
+        redisFree(redis_target);
+        cout<<"连接redis失败"<<endl;     
+    }
+    
+    //禁用nagle算法，防止粘包
+    //int enable = 1;
+    //setsockopt(conn, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+
     while(1){
         cout<<"-----------------------------\n";
         memset(buffer,0,sizeof(buffer));
         int len = recv(conn, buffer, sizeof(buffer),0);
 
-        //没收到消息直接下一次循环
-        if(len==0)
-            continue;
+        //断开了连接或者发生了异常
+        if(len==0||len==-1)
+            break;
 
         string str(buffer);
         //cout<<"用户"<<inet_ntoa(clnt_adr.sin_addr)<<"正在连接";
+        
+        //2020.12.9新增：先接收cookie看看redis是否保存该用户的登录状态
+        if(str.find("cookie:")!=str.npos){
+            string cookie=str.substr(7);
+            string redis_str="hget "+cookie+" name";
+            redisReply *r = (redisReply*)redisCommand(redis_target,redis_str.c_str());
+            string send_res;
+            if(r->str){
+                cout<<"查询redis结果："<<r->str<<endl;
+                send_res=r->str;
+                //cout<<sizeof(r->str)<<endl;
+                // cout<<send_res.length()<<endl;
+            }
+            else
+                send_res="NULL";
+            send(conn,send_res.c_str(),send_res.length()+1,0);
+            //if(r->str==)
+        }
 
         //登录
-        if(str.find("login")!=str.npos){
+        else if(str.find("login")!=str.npos){
             int p1=str.find("login"),p2=str.find("pass:");
             name=str.substr(p1+5,p2-5);
             pass=str.substr(p2+5,str.length()-p2-4);
@@ -62,13 +94,35 @@ void* handle_all_request(void *arg){
                 cout<<"查询到用户名:"<<info[0]<<" 密码:"<<info[1]<<endl;
                 if(info[1]==pass){
                     cout<<"登录密码正确\n";
-                    char str1[100]="ok";
+                    string str1="ok";
                     if_login=true;
                     login_name=name;
                     pthread_mutex_lock(&mutx); //上锁
                     name_sock_map[name]=conn;//记录下名字和文件描述符的对应关系
                     pthread_mutex_unlock(&mutx); //解锁
-                    send(conn,str1,strlen(str1),0);
+
+                    //2020.12.9新添加：随机生成sessionid并发送到客户端
+                    srand(time(NULL));//初始化随机数种子
+                    for(int i=0;i<10;i++){
+                        int type=rand()%3;//type为0代表数字，为1代表小写字母，为2代表大写字母
+                        if(type==0)
+                            str1+='0'+rand()%9;
+                        else if(type==1)
+                            str1+='a'+rand()%26;
+                        else if(type==2)
+                            str1+='A'+rand()%26;
+                    }
+                    //将sessionid存入redis
+                    string redis_str="hset "+str1.substr(2)+" name "+login_name;
+                    redisReply *r = (redisReply*)redisCommand(redis_target,redis_str.c_str());
+                    //设置生存时间,默认300秒
+                    redis_str="expire "+str1.substr(2)+" 300";
+                    r=(redisReply*)redisCommand(redis_target,redis_str.c_str());
+
+                    cout<<"随机生成的sessionid为："<<str1.substr(2)<<endl;
+                    //cout<<"redis指令:"<<r->str<<endl;
+
+                    send(conn,str1.c_str(),str1.length()+1,0);
                 }
                 else{
                     cout<<"登录密码错误\n";

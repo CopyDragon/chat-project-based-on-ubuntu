@@ -16,7 +16,10 @@
 #include<arpa/inet.h>
 #include<sys/socket.h>
 #include<mysql/mysql.h>
+#include<time.h>
 #include<netinet/in.h>
+#include<netinet/tcp.h>
+#include <hiredis/hiredis.h>
 using namespace std;
 
 //线程执行此函数，处理请求

@@ -16,10 +16,10 @@
 using namespace std;
 int main(){
     MYSQL *con = mysql_init(NULL);
-    mysql_real_connect(con, "localhost", "fyl", "123456",
+    mysql_real_connect(con, "127.0.0.1", "root", "",
                                                   "test_connect", 0, NULL, CLIENT_MULTI_STATEMENTS);
     string str="INSERT INTO user VALUES ('FYL','abc123');";
-    if(mysql_query(con,str.c_str()))
+    if(!mysql_query(con,str.c_str()))
         cout<<"success!";
 }
 
