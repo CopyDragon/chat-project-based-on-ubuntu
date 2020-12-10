@@ -19,7 +19,11 @@ chat-project-based-on-ubuntu
 
 
 项目环境：
-ubuntu + vi编辑器 + Mysql + redis
+1、ubuntu
+2、vi编辑器
+3、g++
+4、Mysql
+5、redis
 
 
 主要技术：
@@ -48,6 +52,7 @@ ubuntu + vi编辑器 + Mysql + redis
 10、HandleClient.h、HandleClient.cpp：客户端的线程函数代码
 11、make_and_run.sh：编译运行的shell脚本
 12、cookie.txt：把程序跑起来才会在客户端产生的文件，保存sessionid
+13、test_thread_pool文件夹：里面的文件用于测试boost库的内存池使用
 
 运行环境说明：
 1、基于ubuntu系统

@@ -5,20 +5,19 @@
 	> Created Time: Tue Oct 20 16:11:22 2020
  ************************************************************************/
 
-#include"HandleServer.h"
+#include"HandleServerUseThreadPool.h"
 #include"global.h"
 
 //extern unordered_map<pair<int,string>,pair<int,string>> from_to_map;//记录目标用户、源用户
 extern unordered_map<string,int> name_sock_map;//名字和套接字描述符
 extern unordered_map<int,set<int>> group_map;//记录群号和套接字描述符集合
 
-void* handle_all_request(void *arg){
+void handle_all_request(int arg){
     pthread_mutex_t mutx;//互斥锁，锁住需要修改name_sock_map的临界区
     pthread_mutex_t group_mutx;//互斥锁，锁住修改group_map的临界区
     pthread_mutex_init(&mutx, NULL); //创建互斥锁
     pthread_mutex_init(&group_mutx,NULL);//创建互斥锁
-    int conn=*(int *)arg;
-    cout<<"conn:"<<conn<<endl;
+    int conn=arg;
     int target_conn=-1;
     char buffer[1000];
     string name,pass;
