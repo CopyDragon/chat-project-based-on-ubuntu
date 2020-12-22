@@ -74,6 +74,7 @@ chat-project-based-on-ubuntu
 20、serverV2.cpp：IO多路复用+线程池实现的并发服务器2.0
 21、HandleServerV2.cpp：serverV2使用线程池调用该函数处理事件
 22、HandleServerV2.h：文件21的头文件
+23、serverV2：可执行文件，IO多路复用+线程池实现的服务器
 
 特别注意：
 server、serverUseThreadPool、serverV2都是服务器，只运行其中一个即可，
@@ -90,8 +91,8 @@ server是普通的多线程服务器，serverUseThreadPool是用线程池实现�
 1、首先在mysql控制台创建一个数据库叫test_connect，再创一个表叫user，表有两项VARCHAR类型属性：NAME和PASSWORD，将NAME设为主键
 2、然后修改server和serverUseThreadPool.cpp代码中的ip地址，更改为自己的服务器ip地址
 3、启动Mysql、redis服务
-4、执行make_and_run脚本得到可执行文件client、server、serverUseThreadPool
-5、用一个终端先运行server或者serverUseThreadPool
+4、执行make_and_run脚本得到可执行文件client、server、serverUseThreadPool、serverV2
+5、用一个终端先运行server或者serverUseThreadPool或者serverV2
 6、再开另外一个或多个终端运行client
 
 备注
