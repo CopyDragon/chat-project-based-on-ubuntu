@@ -153,7 +153,9 @@ void handle_all_request(string epoll_str,int conn_num){
         if(name_sock_map.find(target)==name_sock_map.end())
             cout<<"源用户为"<<from<<",目标用户"<<target_name<<"仍未登陆，无法发起私聊\n";
         else{
+            pthread_mutex_lock(&mutx);
             from_to_map[from]=target;
+            pthread_mutex_unlock(&mutx);
             login_name=from;
             cout<<"源用户"<<login_name<<"向目标用户"<<target_name<<"发起的私聊即将建立";
             cout<<",目标用户的套接字描述符为"<<name_sock_map[target]<<endl;
