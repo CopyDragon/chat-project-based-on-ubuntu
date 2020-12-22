@@ -8,7 +8,7 @@
 --------------------------------------------------
 
 chat-project-based-on-ubuntu
-使用C++实现的ubuntu环境下的聊天小项目，支持注册、登录、记录登录状态、私聊、群聊功能，使用到的技术包括C++、TCP网络编程、多线程、线程池、Mysql、redis、session、cookie、互斥锁等。
+使用C++实现的ubuntu环境下的聊天小项目，采用C/S架构,支持注册、登录、记录登录状态、私聊、群聊功能，使用到的技术包括C++、TCP网络编程、IO多路复用、多线程、线程池、Mysql、redis、session、cookie、互斥锁等。
 
 主要功能：
 1、用户注册，数据存储到服务器主机的数据库中 
@@ -30,16 +30,26 @@ chat-project-based-on-ubuntu
 主要技术：
 1、C++语言、STL库容器和函数
 2、多线程实现并发服务器
-3、使用boost库的线程池实现并发服务器
-4、TCP socket网络编程
-5、Mysql数据库以及SQL语句
-6、redis数据库（HASH数据类型、设置键的过期时间）
-7、session、cookie（利用redis保存session对象，服务器随机生成sessionid发往客户端保存到cookie)
-8、线程互斥锁
-9、makefile编译
-10、git版本管理
-11、shell脚本测试
+3、IO多路复用+线程池实现并发服务器（使用epoll的边缘触发）
+4、使用boost库的线程池实现并发服务器
+5、TCP socket网络编程
+6、Mysql数据库以及SQL语句
+7、redis数据库（HASH数据类型、设置键的过期时间）
+8、session、cookie（利用redis保存session对象，服务器随机生成sessionid发往客户端保存到cookie)
+9、线程互斥锁
+10、makefile编译
+11、git版本管理
+12、shell脚本测试
 
+设计思路：
+1、用Mysql记录客户的账号和密码，注册和登录都要经过Mysql
+2、使用C/S模型完成私聊和群聊功能，所有的请求和聊天记录都会经过服务器并转发，减轻客户端压力，客户端只维护和服务器的TCP连接
+3、利用Redis记录用户登录状态（HASH类型，键为sessionid，值为session对象，键五分钟后过期），当用户成功登录时服务器会利用随机算法生成sessionid发送到客户端保存，客户登录时会优先发送cookie到服务器检查，如果检查通过就不用输入账号密码登录。
+4、循序渐进实现了三种服务器：多线程服务器、线程池服务器、IO多路复用+线程池服务器
+5、IO多路复用+线程池服务器：采用epoll的边缘触发ET模式，对所有的读事件感兴趣，读到客户端发来的请求后将任务分配给线程池来完成
+
+生成sessionid的随机算法：
+   sessionid大小为10位，每位由数字、小写字母、大写字母随机组成，理论上有(9+26+26)^10种组合
 
 文件说明：
 1、log.txt：git导出的版本日志，记录了版本更新历史
@@ -61,9 +71,13 @@ chat-project-based-on-ubuntu
 17、server：可执行文件，多线程服务器
 18、serverUseThreadPool：可执行文件，线程池服务器
 19、client：可执行文件，客户端
+20、serverV2.cpp：IO多路复用+线程池实现的并发服务器2.0
+21、HandleServerV2.cpp：serverV2使用线程池调用该函数处理事件
+22、HandleServerV2.h：文件21的头文件
 
 特别注意：
-server和serverUseThreadPool都是服务器，只运行其中一个即可，server是普通的多线程服务器，serverUseThreadPool是用线程池实现的服务器
+server、serverUseThreadPool、serverV2都是服务器，只运行其中一个即可，
+server是普通的多线程服务器，serverUseThreadPool是用线程池实现的服务器，serverV2是IO多路复用+线程池实现的服务器
 
 运行环境说明：
 1、基于ubuntu系统
@@ -73,7 +87,7 @@ server和serverUseThreadPool都是服务器，只运行其中一个即可，serv
 5、安装了boost库1.71版本
 
 使用说明：
-1、首先在mysql控制台创建一个数据库叫test_connect，再创一个表叫user，表有两项VARCHAR类型属性：NAME和PASSWORD
+1、首先在mysql控制台创建一个数据库叫test_connect，再创一个表叫user，表有两项VARCHAR类型属性：NAME和PASSWORD，将NAME设为主键
 2、然后修改server和serverUseThreadPool.cpp代码中的ip地址，更改为自己的服务器ip地址
 3、启动Mysql、redis服务
 4、执行make_and_run脚本得到可执行文件client、server、serverUseThreadPool

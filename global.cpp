@@ -9,3 +9,4 @@
 
 unordered_map<string,int> name_sock_map;
 unordered_map<int,set<int>> group_map;
+unordered_map<string,string> from_to_map;//key:用户名 value:key的用户想私聊的用户
