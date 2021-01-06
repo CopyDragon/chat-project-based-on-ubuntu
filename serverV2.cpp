@@ -35,7 +35,7 @@ using namespace std;
 #define SERV_PORT 8000
 #define INFTIM 1000 
 
-extern void handle_all_request(string epoll_str,int conn_num);
+extern void handle_all_request(string epoll_str,int conn_num,int epollfd);
 extern unordered_map<string,int> name_sock_map;//记录名字和套接字描述符
 
 //将参数的文件描述符设为非阻塞
@@ -111,8 +111,8 @@ int main(){
                 }
                 //设置用于读操作的文件描述符  
                 ev.data.fd=connfd;  
-                //设置用于注册的读操作事件，采用ET边缘触发  
-                ev.events=EPOLLIN|EPOLLET;
+                //设置用于注册的读操作事件，采用ET边缘触发，为防止多个线程处理同一socket而使用EPOLLONESHOT  
+                ev.events=EPOLLIN|EPOLLET|EPOLLONESHOT;
                 //边缘触发要将套接字设为非阻塞
                 setnonblocking(connfd);
                 //注册ev  
@@ -136,7 +136,7 @@ int main(){
                             printf("数据读取完毕\n");
                             cout<<"接收到的完整内容为："<<recv_str<<endl;
                             cout<<"开始用线程池处理事件"<<endl;
-                            boost::asio::post(boost::bind(handle_all_request,recv_str,sockfd)); //处理事件
+                            boost::asio::post(boost::bind(handle_all_request,recv_str,sockfd,epfd)); //处理事件
                             break;
                         }
                         cout<<"errno:"<<errno<<endl;

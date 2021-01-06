@@ -12,7 +12,7 @@ extern unordered_map<string,int> name_sock_map;//名字和套接字描述符
 extern unordered_map<int,set<int>> group_map;//记录群号和套接字描述符集合
 extern unordered_map<string,string> from_to_map;//记录用户xx要向用户yy发送信息
 
-void handle_all_request(string epoll_str,int conn_num){
+void handle_all_request(string epoll_str,int conn_num,int epollfd){
     pthread_mutex_t mutx;//互斥锁，锁住需要修改name_sock_map的临界区
     pthread_mutex_t group_mutx;//互斥锁，锁住修改group_map的临界区
     pthread_mutex_init(&mutx, NULL); //创建互斥锁
@@ -236,6 +236,13 @@ void handle_all_request(string epoll_str,int conn_num){
         }       
     }  
     cout<<"---------------------"<<endl;
+
+    //2021.1.6添加：线程工作完毕后重新注册事件
+    epoll_event event;
+    event.data.fd=conn;
+    event.events=EPOLLIN|EPOLLET|EPOLLONESHOT;
+    epoll_ctl(epollfd,EPOLL_CTL_MOD,conn,&event);
+
     mysql_close(con);
 }
 
