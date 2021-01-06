@@ -8,7 +8,7 @@
 --------------------------------------------------
 
 chat-project-based-on-ubuntu
-使用C++实现的ubuntu环境下的聊天小项目，采用C/S架构,支持注册、登录、记录登录状态、私聊、群聊功能，使用到的技术包括C++、TCP网络编程、IO多路复用、多线程、线程池、Mysql、redis、session、cookie、互斥锁等。
+使用C++实现的ubuntu环境下的聊天小项目，采用C/S架构,支持注册、登录、记录登录状态、私聊、群聊功能，利用epoll监听+线程池处理的Reactor模式实现并发服务器，使用到的技术包括C++、TCP网络编程、IO多路复用、多线程、线程池、Mysql、redis、session、cookie、互斥锁等，编写了makefile进行编译，测试用到了shell脚本，开发过程使用git进行版本管理，编写了说明文档。
 
 主要功能：
 1、用户注册，数据存储到服务器主机的数据库中 
@@ -30,7 +30,7 @@ chat-project-based-on-ubuntu
 主要技术：
 1、C++语言、STL库容器和函数
 2、多线程实现并发服务器
-3、IO多路复用+线程池实现并发服务器（使用epoll的边缘触发）
+3、IO多路复用+线程池实现并发服务器（使用epoll的ET边缘触发、EPOLLONESHOT）
 4、使用boost库的线程池实现并发服务器
 5、TCP socket网络编程
 6、Mysql数据库以及SQL语句
