@@ -5,19 +5,6 @@
 	> Created Time: Sun Oct 18 16:06:56 2020
  ************************************************************************/
 
-#include<iostream>
-#include<stdlib.h>
-#include<unistd.h>
-#include<string.h>
-#include<vector>
-#include <arpa/inet.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<mysql/mysql.h>
-#include<unordered_map>
-#include<pthread.h>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
 #include "HandleServerUseThreadPool.h"
 #include "global.h"
 using namespace std;

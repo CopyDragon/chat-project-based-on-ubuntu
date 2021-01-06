@@ -1,3 +1,33 @@
+commit 63050e3d56313c810d45b88a514ee0485a3f4b9b
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 6 12:58:52 2021 +0800
+
+     修改了说明文档
+
+commit 1b69690ef7653ca3a523d5f9aa3f9e9a6ec79a4f
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 6 12:54:06 2021 +0800
+
+     2021.1.6新增： epoll添加了EPOLLONESHOT，防止多个线程在同一socket上工作
+
+commit f2efe69e72cd32da04e8ae841d088f912b01f5d0
+Author: fyl <838106527@qq.com>
+Date:   Tue Dec 22 18:02:59 2020 +0800
+
+    修改了说明文档
+
+commit 26b9707f1c7bb67f0539d8eca757a0c36cedc42f
+Author: fyl <838106527@qq.com>
+Date:   Tue Dec 22 17:57:05 2020 +0800
+
+     补充了漏掉的互斥锁
+
+commit 61fb6b4c7cc95c1155d1af9c3f69e5ffd4d0c8e8
+Author: fyl <838106527@qq.com>
+Date:   Tue Dec 22 17:15:45 2020 +0800
+
+     修改了众多bug，修改了说明文档
+
 commit d469615dedcdb16d3401d991cc5c2d84f985a88c
 Author: fyl <838106527@qq.com>
 Date:   Tue Dec 22 17:12:42 2020 +0800

@@ -5,17 +5,6 @@
 	> Created Time: Sun Oct 18 16:06:56 2020
  ************************************************************************/
 
-#include<iostream>
-#include<stdlib.h>
-#include<unistd.h>
-#include<string.h>
-#include<vector>
-#include <arpa/inet.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<mysql/mysql.h>
-#include<unordered_map>
-#include<pthread.h>
 #include "HandleServer.h"
 #include "global.h"
 using namespace std;

@@ -8,9 +8,24 @@
 #ifndef _GLOBAL_H
 #define _GLOBAL_H
 
-#include<unordered_map>
-#include<vector>
 #include<set>
+#include<iostream>
+#include<stdlib.h>
+#include<unistd.h>
+#include<string.h>
+#include<vector>
+#include<arpa/inet.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<mysql/mysql.h>
+#include<unordered_map>
+#include<pthread.h>
+#include<sys/epoll.h>
+#include<fcntl.h>
+#include<unistd.h>
+#include<boost/bind.hpp>
+#include<boost/asio.hpp>
+#include<errno.h>
 using namespace std;
 
 extern unordered_map<string,int> name_sock_map;//记录名字和文件描述符
