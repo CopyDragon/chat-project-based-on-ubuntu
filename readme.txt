@@ -25,6 +25,7 @@ chat-project-based-on-ubuntu
 4、Mysql 5.7.31
 5、redis 4.0.8
 6、boost库1.71版本
+7、hiredis库
 
 
 主要技术：
@@ -86,6 +87,7 @@ server是普通的多线程服务器，serverUseThreadPool是用线程池实现�
 3、服务器安装了mysql（安装教程：https://blog.csdn.net/weixin_44164489/article/details/108926885）
 4、服务器安装了redis（安装教程：https://blog.csdn.net/weixin_44164489/article/details/109015099)
 5、安装了boost库1.71版本
+6、安装了hiredis库（安装教程：https://blog.csdn.net/weixin_44164489/article/details/110876479)
 
 使用说明：
 1、首先在mysql控制台创建一个数据库叫test_connect，再创一个表叫user，表有两项VARCHAR类型属性：NAME和PASSWORD，将NAME设为主键
