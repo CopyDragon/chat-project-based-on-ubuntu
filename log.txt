@@ -1,3 +1,21 @@
+commit 5b0daa2a4e0f91df639354ebc461a8029428e76b
+Author: fyl <838106527@qq.com>
+Date:   Fri Jan 8 19:00:41 2021 +0800
+
+     修改了说明文档，增加了redis记录登录状态的说明
+
+commit 88e9034ba36f6d04dd5b042012b85654bd7de876
+Author: fyl <838106527@qq.com>
+Date:   Thu Jan 7 15:02:55 2021 +0800
+
+     修改了说明文档
+
+commit e5e47ec72fd65a087efdce585e163cbcb52e62fb
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 6 18:39:36 2021 +0800
+
+     去掉了一些重复的include语句
+
 commit 63050e3d56313c810d45b88a514ee0485a3f4b9b
 Author: fyl <838106527@qq.com>
 Date:   Wed Jan 6 12:58:52 2021 +0800
