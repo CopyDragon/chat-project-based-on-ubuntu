@@ -49,6 +49,15 @@ chat-project-based-on-ubuntu
 4、循序渐进实现了三种服务器：多线程服务器、线程池服务器、IO多路复用+线程池服务器
 5、IO多路复用+线程池服务器：采用epoll的边缘触发ET模式，对所有的读事件感兴趣，读到客户端发来的请求后将任务分配给线程池来完成
 
+Redis记录登录状态：
+    假设用户xiaoming登录，服务器随机生成的sessionid为1a2b3c4DEF，
+    那么会执行如下的redis插入语句：hset 1a2b3c4DEF name xiaoming ，
+    然后执行如下语句设置过期时间为300秒：expire 1a2b3c4DEF 300 ，
+    服务器将该sessionid发往客户端作为cookie保存，客户端在重新启动进程会将cookie发往服务器，
+    服务器收到客户端发来的sessionid后查询，使用如下语句：hget 1a2b3c4DEF name，
+    只要该sessionid还未过期，就可以查询到结果，告知客户端登陆成功以及用户名。
+    （注：redis查看所有键可用keys *语句）
+
 生成sessionid的随机算法：
    sessionid大小为10位，每位由数字、小写字母、大写字母随机组成，理论上有(9+26+26)^10种组合
 
