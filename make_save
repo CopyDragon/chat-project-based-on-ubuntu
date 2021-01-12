@@ -20,4 +20,6 @@ HandleClient.o:	HandleClient.cpp
 clean:
 	rm server
 	rm client
+	rm serverV2
+	rm serverUseThreadPool
 	rm *.o
