@@ -12,10 +12,11 @@ extern unordered_map<string,int> name_sock_map;//名字和套接字描述符
 extern unordered_map<int,set<int>> group_map;//记录群号和套接字描述符集合
 extern unordered_map<string,string> from_to_map;//记录用户xx要向用户yy发送信息
 //extern clock_t begin_clock;//开始时间，用于性能测试
-extern time_point<system_clock> begin_clock;
+//extern time_point<system_clock> begin_clock;
 extern int total_handle;//总处理请求数，用于性能测试
 
 void handle_all_request(string epoll_str,int conn_num,int epollfd){
+    time_point<system_clock> begin_clock= system_clock::now();
     pthread_mutex_t mutx;//互斥锁，锁住需要修改name_sock_map的临界区
     pthread_mutex_t group_mutx;//互斥锁，锁住修改group_map的临界区
     pthread_mutex_init(&mutx, NULL); //创建互斥锁
@@ -28,7 +29,8 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     string login_name;//记录当前服务对象的名字
     string target_name;//记录发送信息时目标用户的名字
     int group_num;//记录群号
-
+    
+    
     //连接MYSQL数据库
     MYSQL *con=mysql_init(NULL);
     mysql_real_connect(con,"127.0.0.1","root","","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
@@ -45,8 +47,41 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     //setsockopt(conn, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
 
     cout<<"-----------------------------\n";
-    string str=epoll_str;
-    
+    string recv_str;
+    while(1){
+        char buf[10];
+        memset(buf, 0, sizeof(buf));
+        int ret  = recv(conn, buf, sizeof(buf), 0);
+        if(ret < 0){
+            cout<<"recv返回值小于0"<<endl;
+            //对于非阻塞IO，下面的事件成立标识数据已经全部读取完毕
+            if((errno == EAGAIN) || (errno == EWOULDBLOCK)){
+                  printf("数据读取完毕\n");
+                cout<<"接收到的完整内容为："<<recv_str<<endl;
+                cout<<"开始处理事件"<<endl;
+                break;
+            }
+            cout<<"errno:"<<errno<<endl;
+            close(conn);
+            mysql_close(con);
+            //events[i].data.fd=-1;
+            return;
+        }
+        else if(ret == 0){
+            cout<<"recv返回值为0"<<endl;
+            close(conn);
+            mysql_close(con);
+            return;
+            //events[i].data.fd=-1;
+        }
+        else{
+            printf("接收到内容如下: %s\n",buf);
+            string tmp(buf);
+            recv_str+=tmp;
+        }
+    }
+    string str=recv_str;
+
     //2020.12.9新增：先接收cookie看看redis是否保存该用户的登录状态
     if(str.find("cookie:")!=str.npos){
         string cookie=str.substr(7);
@@ -56,6 +91,9 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
         if(r->str){
             cout<<"查询redis结果："<<r->str<<endl;
             send_res=r->str;
+            pthread_mutex_lock(&mutx); //上锁
+            name_sock_map[send_res]=conn;//记录下名字和文件描述符的对应关系
+            pthread_mutex_unlock(&mutx); //解锁
             //cout<<sizeof(r->str)<<endl;
             // cout<<send_res.length()<<endl;
         }
@@ -249,13 +287,12 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     mysql_close(con);
 
     //2021.1.11:性能测试
-    pthread_mutex_lock(&mutx);
-    total_handle++;
-    pthread_mutex_unlock(&mutx);
-    //clock_t end_clock=clock();
     auto end_clock   = system_clock::now();
     auto duration = duration_cast<microseconds>(end_clock - begin_clock);
-    double total_time=double(duration.count()) * microseconds::period::num / microseconds::period::den; 
+    pthread_mutex_lock(&mutx);
+    total_time+=double(duration.count()) * microseconds::period::num / microseconds::period::den; 
+    total_handle++;
+    pthread_mutex_unlock(&mutx);
     //double total_time=(double)(end_clock-begin_clock)/CLOCKS_PER_SEC;
     //cout<<begin_clock<<" "<<end_clock<<endl;
     cout<<"已用时"<<total_time<<"秒,";
@@ -264,4 +301,3 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     cout<<"平均一秒处理"<<total_handle/total_time<<"个请求\n";
     cout<<"---------------------------------\n";
 }
-

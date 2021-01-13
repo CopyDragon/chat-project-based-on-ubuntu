@@ -13,7 +13,7 @@ using namespace std;
 //#define OPEN_MAX 100
 
 //listen的backlog大小
-#define LISTENQ 20
+#define LISTENQ 50
 //监听端口号
 #define SERV_PORT 8000
 #define INFTIM 1000 
@@ -21,7 +21,8 @@ using namespace std;
 extern void handle_all_request(string epoll_str,int conn_num,int epollfd);
 extern unordered_map<string,int> name_sock_map;//记录名字和套接字描述符
 //extern clock_t begin_clock;//开始时间，用于性能测试，有bug
-extern time_point<system_clock> begin_clock;//开始时间，压力测试
+extern double total_time;//线程池处理任务的总时间
+//extern time_point<system_clock> begin_clock;//开始时间，压力测试
 extern int total_handle;//总处理请求数，用于性能测试
 
 //将参数的文件描述符设为非阻塞
@@ -72,21 +73,17 @@ int main(){
     clilen=sizeof(clientaddr);
     maxi = 0;   
 
-    /* 定义一个10线程的线程池 */
-    boost::asio::thread_pool tp(10);
+    /* 定义一个100线程的线程池 */
+    boost::asio::thread_pool tp(100);
 
     //压力测试
-    bool if_clock=false;
+    total_time=0;
 
     while(1){  
         cout<<"--------------------------"<<endl;
         cout<<"epoll_wait阻塞中"<<endl;
         //等待epoll事件的发生  
         nfds=epoll_wait(epfd,events,200,-1);//最后一个参数是timeout，0:立即返回，-1:一直阻塞直到有事件，x:等待x毫秒
-        if(!if_clock){
-            begin_clock=system_clock::now();
-            if_clock=true;
-        }
         cout<<"epoll_wait返回，有事件发生"<<endl;
         //处理所发生的所有事件  
         for(i=0;i<nfds;++i)  
@@ -115,39 +112,10 @@ int main(){
             else if(events[i].events&EPOLLIN)  
             {  
                 sockfd = events[i].data.fd;
+                events[i].data.fd=-1;
                 cout<<"接收到读事件"<<endl;
                 string recv_str;
-                /*这段代码不会被重复触发，所以我们循环读取数据，以确保把socket缓冲区的数据全部读取*/
-                while(1){
-                    char buf[10];
-                    memset(buf, 0, sizeof(buf));
-                    int ret  = recv(sockfd, buf, sizeof(buf), 0);
-                    if(ret < 0){
-                        cout<<"recv返回值小于0"<<endl;
-                        //对于非阻塞IO，下面的事件成立标识数据已经全部读取完毕。
-                        if((errno == EAGAIN) || (errno == EWOULDBLOCK)){
-                            printf("数据读取完毕\n");
-                            cout<<"接收到的完整内容为："<<recv_str<<endl;
-                            cout<<"开始用线程池处理事件"<<endl;
-                            boost::asio::post(boost::bind(handle_all_request,recv_str,sockfd,epfd)); //处理事件
-                            break;
-                        }
-                        cout<<"errno:"<<errno<<endl;
-                        close(sockfd);
-                        events[i].data.fd=-1;
-                        break;                       
-                    }
-                    else if(ret == 0){
-                        cout<<"recv返回值为0"<<endl;
-                        close(sockfd); 
-                        events[i].data.fd=-1;
-                    }
-                    else{
-                        printf("接收到内容如下: %s\n",buf); 
-                        string tmp(buf);
-                        recv_str+=tmp;
-                    }
-                }
+                boost::asio::post(boost::bind(handle_all_request,recv_str,sockfd,epfd)); //加入任务队列，处理事件
             }  
         } 
     }  

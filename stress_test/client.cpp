@@ -161,13 +161,14 @@ int main(){
         pthread_t send_t,recv_t;//线程ID
         void *thread_return;
         //压力测试
-        choice=2;
+        choice=1;
         if(choice==0)
             break;
         if(choice==1){
-            cout<<"请输入对方的用户名:";
-            string target_name,content;
-            cin>>target_name;
+            //cout<<"请输入对方的用户名:";
+            cout<<"测试中"<<endl;
+            string target_name="fyl",content;
+            //cin>>target_name;
             string sendstr("target:"+target_name+"from:"+login_name);//标识目标用户+源用户
             send(sock,sendstr.c_str(),sendstr.length(),0);//先向服务器发送目标用户、源用户
             cout<<"请输入你想说的话(输入exit退出)：\n";
@@ -175,7 +176,8 @@ int main(){
             auto recv_thread=pthread_create(&recv_t,NULL,handle_recv,(void *)&sock);//创建接收线程
             pthread_join(send_t,&thread_return);
             //pthread_join(recv_t,&thread_return);
-            pthread_cancel(send_t);
+            pthread_cancel(recv_t);
+            break;
         }    
         if(choice==2){
             system("clear");
@@ -185,13 +187,13 @@ int main(){
             string sendstr("group:"+to_string(num));
             send(sock,sendstr.c_str(),sendstr.length(),0);
             sleep(1);
+            //sleep(1);
             //cout<<"请输入你想说的话(输入exit退出)：\n";
             int sock1=-sock;
             auto send_thread=pthread_create(&send_t,NULL,handle_send,(void *)&sock1);//创建发送线程
             auto recv_thread=pthread_create(&recv_t,NULL,handle_recv,(void *)&sock);//创建接收线程
             pthread_join(send_t,&thread_return);
-            pthread_cancel(recv_t);
-            break;
+            //pthread_cancel(recv_t);
         }
     } 
     close(sock);

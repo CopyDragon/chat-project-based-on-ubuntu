@@ -27,7 +27,7 @@ void *handle_send(void *arg){
     int sock=*(int *)arg;
     for(int i=1;i<=5;i++){
         string str;
-        //2021.1.1-：压力测试，每隔1s发送一条信息，共发5条
+        //2021.1.12：压力测试,共发10条
         str="测试"+to_string(i);
         if(str=="exit")
             break;
