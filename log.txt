@@ -1,3 +1,33 @@
+commit d8e15487646c23d4d1d8d75bbf42cbda38502952
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 13 14:19:26 2021 +0800
+
+     修复了众多bug，但是压力测试还是有bug，stress_test文件夹可以暂时无视
+
+commit 41854dff3c9ba66d64ed2df8a75deb0f0fe05281
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 13 14:09:52 2021 +0800
+
+     将io移到工作线程
+
+commit a1504a5b2f2d897b2ee318921266f81660309160
+Author: fyl <838106527@qq.com>
+Date:   Tue Jan 12 16:49:16 2021 +0800
+
+     在stress_test文件夹中进行了压力测试
+
+commit fa452d751efc478e381d61af062451f3fab6b732
+Author: fuyinglong <55621210+CopyDragon@users.noreply.github.com>
+Date:   Fri Jan 8 19:20:51 2021 +0800
+
+    Delete EOF
+
+commit ca069a3b40d711facc18bd8b9c5c7ad0ec378b97
+Author: fyl <838106527@qq.com>
+Date:   Fri Jan 8 19:14:25 2021 +0800
+
+     修改了说明文档前面的介绍
+
 commit 5b0daa2a4e0f91df639354ebc461a8029428e76b
 Author: fyl <838106527@qq.com>
 Date:   Fri Jan 8 19:00:41 2021 +0800
