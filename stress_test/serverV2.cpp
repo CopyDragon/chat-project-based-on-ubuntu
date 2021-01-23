@@ -24,6 +24,7 @@ extern unordered_map<string,int> name_sock_map;//记录名字和套接字描述�
 extern double total_time;//线程池处理任务的总时间
 //extern time_point<system_clock> begin_clock;//开始时间，压力测试
 extern int total_handle;//总处理请求数，用于性能测试
+extern int total_recv_request;//接收到的请求总数，性能测试
 
 //将参数的文件描述符设为非阻塞
 void setnonblocking(int sock)  
@@ -49,9 +50,9 @@ int main(){
     //char line[MAXLINE];  
     socklen_t clilen;  
     //声明epoll_event结构体的变量,ev用于注册事件,数组用于回传要处理的事件  
-    struct epoll_event ev,events[200];  
+    struct epoll_event ev,events[2000];  
     //生成用于处理accept的epoll专用的文件描述符  
-    epfd=epoll_create(256);  
+    epfd=epoll_create(2000);  
     struct sockaddr_in clientaddr;  
     struct sockaddr_in serveraddr;  
     listenfd = socket(PF_INET, SOCK_STREAM, 0);  
@@ -66,7 +67,7 @@ int main(){
     //设置serveraddr
     bzero(&serveraddr, sizeof(serveraddr));  
     serveraddr.sin_family = AF_INET;  
-    serveraddr.sin_addr.s_addr = inet_addr("172.29.18.134");//此处设为服务器的ip
+    serveraddr.sin_addr.s_addr = inet_addr("192.168.3.202");//此处设为服务器的ip
     serveraddr.sin_port=8000;  
     bind(listenfd,(sockaddr *)&serveraddr, sizeof(serveraddr));  
     listen(listenfd, LISTENQ); 
@@ -78,12 +79,14 @@ int main(){
 
     //压力测试
     total_time=0;
+    total_handle=0;
+    total_recv_request=0;
 
     while(1){  
         cout<<"--------------------------"<<endl;
         cout<<"epoll_wait阻塞中"<<endl;
         //等待epoll事件的发生  
-        nfds=epoll_wait(epfd,events,200,-1);//最后一个参数是timeout，0:立即返回，-1:一直阻塞直到有事件，x:等待x毫秒
+        nfds=epoll_wait(epfd,events,2000,-1);//最后一个参数是timeout，0:立即返回，-1:一直阻塞直到有事件，x:等待x毫秒
         cout<<"epoll_wait返回，有事件发生"<<endl;
         //处理所发生的所有事件  
         for(i=0;i<nfds;++i)  
@@ -111,6 +114,7 @@ int main(){
             //接收到读事件
             else if(events[i].events&EPOLLIN)  
             {  
+                total_recv_request++;
                 sockfd = events[i].data.fd;
                 events[i].data.fd=-1;
                 cout<<"接收到读事件"<<endl;

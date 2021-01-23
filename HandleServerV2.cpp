@@ -285,8 +285,11 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     event.data.fd=conn;
     event.events=EPOLLIN|EPOLLET|EPOLLONESHOT;
     epoll_ctl(epollfd,EPOLL_CTL_MOD,conn,&event);
-    
+   
+    //释放资源
     mysql_close(con);
+    if(redis_target)
+        redisFree(redis_target);
 
     //2021.1.11:性能测试
     auto end_clock   = system_clock::now();
