@@ -14,6 +14,8 @@ extern unordered_map<string,string> from_to_map;//记录用户xx要向用户yy�
 //extern clock_t begin_clock;//开始时间，用于性能测试
 //extern time_point<system_clock> begin_clock;
 extern int total_handle;//总处理请求数，用于性能测试
+extern int total_recv_request;//接收到的请求总数，性能测试
+extern double top_speed;//峰值性能
 
 void handle_all_request(string epoll_str,int conn_num,int epollfd){
     time_point<system_clock> begin_clock= system_clock::now();
@@ -48,8 +50,6 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
 
     cout<<"-----------------------------\n";
     string recv_str;
-    
-    //先读取缓冲区，把字符串全部读出来
     while(1){
         char buf[10];
         memset(buf, 0, sizeof(buf));
@@ -285,8 +285,7 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     event.data.fd=conn;
     event.events=EPOLLIN|EPOLLET|EPOLLONESHOT;
     epoll_ctl(epollfd,EPOLL_CTL_MOD,conn,&event);
-   
-    //释放资源
+    
     mysql_close(con);
     if(redis_target)
         redisFree(redis_target);
@@ -300,9 +299,14 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     pthread_mutex_unlock(&mutx);
     //double total_time=(double)(end_clock-begin_clock)/CLOCKS_PER_SEC;
     //cout<<begin_clock<<" "<<end_clock<<endl;
+    double now_rate=total_handle/total_time;
+    if(now_rate>top_speed)
+        top_speed=now_rate;
     cout<<"已用时"<<total_time<<"秒,";
-    cout<<"共处理"<<total_handle<<"个请求\n";
+    cout<<"共收到"<<total_recv_request<<"个请求,";
+    cout<<"已处理"<<total_handle<<"个请求\n";
     cout<<"处理一个请求平均需要"<<total_time/total_handle<<"秒,";
-    cout<<"平均一秒处理"<<total_handle/total_time<<"个请求\n";
+    cout<<"平均一秒处理"<<now_rate<<"个请求\n";
+    cout<<"峰值性能为一秒处理"<<top_speed<<"个请求";
     cout<<"---------------------------------\n";
 }

@@ -1,3 +1,15 @@
+commit 3beb28b0a977d46b2c2e6c4f18dc59c23edc04dd
+Author: fyl <838106527@qq.com>
+Date:   Sat Jan 23 15:33:27 2021 +0800
+
+     实现了压力测试，模拟大量并发请求登录
+
+commit c7d12154f8f94485d74fd1058b4d462208af82f3
+Author: fyl <838106527@qq.com>
+Date:   Fri Jan 15 12:26:09 2021 +0800
+
+     修改了说明文档
+
 commit d8e15487646c23d4d1d8d75bbf42cbda38502952
 Author: fyl <838106527@qq.com>
 Date:   Wed Jan 13 14:19:26 2021 +0800
