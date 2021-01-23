@@ -116,8 +116,10 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
         cout<<"sql语句:"<<search<<endl;
         auto search_res=mysql_query(con,search.c_str());
         auto result=mysql_store_result(con);
-        int col=mysql_num_fields(result);//获取列数
-        int row=mysql_num_rows(result);//获取行数
+        //int col=mysql_num_fields(result);//获取列数
+        int row;
+        if(result)
+            row=mysql_num_rows(result);//获取行数
         //auto info=mysql_fetch_row(result);//获取一行的信息
         if(search_res==0&&row!=0){
             cout<<"查询成功\n";
