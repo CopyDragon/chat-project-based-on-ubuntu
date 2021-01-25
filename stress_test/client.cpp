@@ -100,7 +100,8 @@ int main(int argc,char * argv[]){
     //2021.1.21：压力测试
     srand(time(NULL));
     int total_name=name_arr.size();
-    while(1){
+    //while(1){
+    for(int j=0;j<4;j++){ 
         sleep(1);
         for(int i=0;i<sock_arr.size();i++){
             //if(if_login)
@@ -240,6 +241,9 @@ int main(int argc,char * argv[]){
         }
     }*/
     //close(sock);
-    for(auto i:sock_arr)
+    cout<<"测试完成，输入任意数字继续";
+    int fin;
+    cin>>fin;
+    for(auto &i:sock_arr)
         close(i);
 }

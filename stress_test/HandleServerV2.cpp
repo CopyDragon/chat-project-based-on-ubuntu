@@ -16,6 +16,7 @@ extern unordered_map<string,string> from_to_map;//记录用户xx要向用户yy�
 extern int total_handle;//总处理请求数，用于性能测试
 extern int total_recv_request;//接收到的请求总数，性能测试
 extern double top_speed;//峰值性能
+extern int Bloom_Filter_bitmap[100000];//布隆过滤器所用的bitmap
 
 void handle_all_request(string epoll_str,int conn_num,int epollfd){
     time_point<system_clock> begin_clock= system_clock::now();
@@ -66,6 +67,8 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
             cout<<"errno:"<<errno<<endl;
             close(conn);
             mysql_close(con);
+            if(!redis_target->err)
+                redisFree(redis_target);
             //events[i].data.fd=-1;
             return;
         }
@@ -73,6 +76,8 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
             cout<<"recv返回值为0"<<endl;
             close(conn);
             mysql_close(con);
+            if(!redis_target->err)
+                redisFree(redis_target);
             return;
             //events[i].data.fd=-1;
         }
@@ -107,70 +112,88 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
 
     //登录
     else if(str.find("login")!=str.npos){
-        int p1=str.find("login"),p2=str.find("pass:");
+        int p1=str.find("login"),p2=str.find("pass:"),flag=0;
         name=str.substr(p1+5,p2-5);
         pass=str.substr(p2+5,str.length()-p2-4);
-        string search="SELECT * FROM user WHERE NAME=\"";
-        search+=name;
-        search+="\";";
-        cout<<"sql语句:"<<search<<endl;
-        auto search_res=mysql_query(con,search.c_str());
-        auto result=mysql_store_result(con);
-        //int col=mysql_num_fields(result);//获取列数
-        int row;
-        if(result)
-            row=mysql_num_rows(result);//获取行数
-        //auto info=mysql_fetch_row(result);//获取一行的信息
-        if(search_res==0&&row!=0){
-            cout<<"查询成功\n";
-            //auto result=mysql_store_result(con);
-            //int col=mysql_num_fields(result);//获取列数
-            //int row=mysql_num_rows(result);//获取行数
-            auto info=mysql_fetch_row(result);//获取一行的信息
-            cout<<"查询到用户名:"<<info[0]<<" 密码:"<<info[1]<<endl;
-            if(info[1]==pass){
-                cout<<"登录密码正确\n";
-                string str1="ok";
-                if_login=true;
-                login_name=name;
-                pthread_mutex_lock(&mutx); //上锁
-                name_sock_map[name]=conn;//记录下名字和文件描述符的对应关系
-                pthread_mutex_unlock(&mutx); //解锁
 
-                //2020.12.9新添加：随机生成sessionid并发送到客户端
-                srand(time(NULL));//初始化随机数种子
-                for(int i=0;i<10;i++){
-                    int type=rand()%3;//type为0代表数字，为1代表小写字母，为2代表大写字母
-                    if(type==0)
-                        str1+='0'+rand()%9;
-                    else if(type==1)
-                        str1+='a'+rand()%26;
-                    else if(type==2)
-                        str1+='A'+rand()%26;
-                }
-                //将sessionid存入redis
-                string redis_str="hset "+str1.substr(2)+" name "+login_name;
-                redisReply *r = (redisReply*)redisCommand(redis_target,redis_str.c_str());
-                //设置生存时间,默认300秒
-                redis_str="expire "+str1.substr(2)+" 300";
-                r=(redisReply*)redisCommand(redis_target,redis_str.c_str());
-
-                cout<<"随机生成的sessionid为："<<str1.substr(2)<<endl;
-                //cout<<"redis指令:"<<r->str<<endl;
-
-                send(conn,str1.c_str(),str1.length()+1,0);
-            }
-            else{
-                cout<<"登录密码错误\n";
-                char str1[100]="wrong";
-                send(conn,str1,strlen(str1),0);
-            }   
+        //2021.1.25：新增布隆过滤器
+        //对字符串使用哈希函数
+        int hash=0;
+        for(auto ch:name){
+            hash=(hash*131+ch)%3200000;
         }
-        else{
-            cout<<"查询失败\n";
+        int index=hash/32,pos=hash%32;
+        if((Bloom_Filter_bitmap[index]&(1<<pos))==0){
+            cout<<"布隆过滤器查询为0，登录用户名必然不存在数据库中\n";
             char str1[100]="wrong";
             send(conn,str1,strlen(str1),0);
+            flag=1;
         }
+        
+        //布隆过滤器无法判断才要查数据库
+        if(flag==0){
+            string search="SELECT * FROM user WHERE NAME=\"";
+            search+=name;
+            search+="\";";
+            cout<<"sql语句:"<<search<<endl;
+            auto search_res=mysql_query(con,search.c_str());
+            auto result=mysql_store_result(con);
+            //int col=mysql_num_fields(result);//获取列数
+            int row;
+            if(result)
+                row=mysql_num_rows(result);//获取行数
+            //auto info=mysql_fetch_row(result);//获取一行的信息
+            if(search_res==0&&row!=0){
+                cout<<"查询成功\n";
+                //auto result=mysql_store_result(con);
+                //int col=mysql_num_fields(result);//获取列数
+                //int row=mysql_num_rows(result);//获取行数
+                auto info=mysql_fetch_row(result);//获取一行的信息
+                cout<<"查询到用户名:"<<info[0]<<" 密码:"<<info[1]<<endl;
+                if(info[1]==pass){
+                    cout<<"登录密码正确\n";
+                    string str1="ok";
+                    if_login=true;
+                    login_name=name;
+                    pthread_mutex_lock(&mutx); //上锁
+                    name_sock_map[name]=conn;//记录下名字和文件描述符的对应关系
+                    pthread_mutex_unlock(&mutx); //解锁
+
+                    //2020.12.9新添加：随机生成sessionid并发送到客户端
+                    srand(time(NULL));//初始化随机数种子
+                    for(int i=0;i<10;i++){
+                        int type=rand()%3;//type为0代表数字，为1代表小写字母，为2代表大写字母
+                        if(type==0)
+                            str1+='0'+rand()%9;
+                        else if(type==1)
+                            str1+='a'+rand()%26;
+                        else if(type==2)
+                            str1+='A'+rand()%26;
+                    }
+                    //将sessionid存入redis
+                    string redis_str="hset "+str1.substr(2)+" name "+login_name;
+                    redisReply *r = (redisReply*)redisCommand(redis_target,redis_str.c_str());
+                    //设置生存时间,默认300秒
+                    redis_str="expire "+str1.substr(2)+" 300";
+                    r=(redisReply*)redisCommand(redis_target,redis_str.c_str());
+
+                    cout<<"随机生成的sessionid为："<<str1.substr(2)<<endl;
+                    //cout<<"redis指令:"<<r->str<<endl;
+
+                    send(conn,str1.c_str(),str1.length()+1,0);
+                }
+                else{
+                    cout<<"登录密码错误\n";
+                    char str1[100]="wrong";
+                    send(conn,str1,strlen(str1),0);
+                }   
+            }
+            else{
+                cout<<"查询失败\n";
+                char str1[100]="wrong";
+                send(conn,str1,strlen(str1),0);
+            }
+        }   
     }
 
     //注册
@@ -289,7 +312,7 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
     epoll_ctl(epollfd,EPOLL_CTL_MOD,conn,&event);
     
     mysql_close(con);
-    if(redis_target)
+    if(!redis_target->err)
         redisFree(redis_target);
 
     //2021.1.11:性能测试

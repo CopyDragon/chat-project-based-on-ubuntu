@@ -25,7 +25,7 @@ int main(){
     //随机生成用户名和密码，保存到本地txt文件，并写入数据库
     srand(time(NULL));
     ofstream out("account.txt");
-    for(int i=0;i<100000;i++){
+    for(int i=0;i<500000;i++){
         string search="INSERT INTO user VALUES (\"",name,pass;
         for(int j=0;j<10;j++){
             bool exist=rand()%2;
@@ -41,6 +41,16 @@ int main(){
         search+="\");";
         //cout<<"sql语句:"<<search<<endl;
         mysql_query(con,search.c_str());
+    }
+    for(int i=0;i<500000;i++){
+        string search="INSERT INTO user VALUES (\"",name,pass;
+        for(int j=0;j<10;j++){
+            bool exist=rand()%2;
+            if(exist)
+                name+=(char)('a'+rand()%26);
+        }
+        //cout<<"第"<<i<<"个随机生成的用户名为："<<name<<endl;
+        out<<name<<endl;
     }
     out.close();
     mysql_close(con);
