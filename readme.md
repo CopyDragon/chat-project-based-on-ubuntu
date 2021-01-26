@@ -72,6 +72,8 @@ github 主页：https://github.com/CopyDragon
 
 12、shell 脚本测试
 
+13、使用bitmap实现布隆过滤器
+
 ### 设计思路：
 
 1、用 Mysql 记录客户的账号和密码，注册和登录都要经过 Mysql
