@@ -25,7 +25,7 @@ extern double total_time;//线程池处理任务的总时间
 //extern time_point<system_clock> begin_clock;//开始时间，压力测试
 extern int total_handle;//总处理请求数，用于性能测试
 extern int total_recv_request;//接收到的请求总数，性能测试
-extern int Bloom_Filter_bitmap[100000];//布隆过滤器所用的bitmap
+extern int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
 
 //将参数的文件描述符设为非阻塞
 void setnonblocking(int sock)  
@@ -51,9 +51,9 @@ int main(){
     //char line[MAXLINE];  
     socklen_t clilen;  
     //声明epoll_event结构体的变量,ev用于注册事件,数组用于回传要处理的事件  
-    struct epoll_event ev,events[2000];  
+    struct epoll_event ev,events[10000];  
     //生成用于处理accept的epoll专用的文件描述符  
-    epfd=epoll_create(2000);  
+    epfd=epoll_create(10000);  
     struct sockaddr_in clientaddr;  
     struct sockaddr_in serveraddr;  
     listenfd = socket(PF_INET, SOCK_STREAM, 0);  
@@ -75,6 +75,8 @@ int main(){
     clilen=sizeof(clientaddr);
     maxi = 0;   
     
+    cout<<"准备连数据库\n";
+
     //连接MYSQL数据库
     MYSQL *con=mysql_init(NULL);
     mysql_real_connect(con,"127.0.0.1","root","","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
@@ -85,6 +87,8 @@ int main(){
     if(result)
         row=mysql_num_rows(result);//获取行数
 
+    cout<<"连接数据库成功\n准备初始化布隆过滤器\n";
+
     //读取数据并完成布隆过滤器初始化
     memset(Bloom_Filter_bitmap,0,sizeof(Bloom_Filter_bitmap));
     for(int i=0;i<row;i++){
@@ -94,14 +98,19 @@ int main(){
         int hash=0;
         //cout<<"字符串："<<read_name;
         for(auto ch:read_name){
-            hash=(hash*131+ch)%3200000;
+            hash=hash*131+ch;
+            if(hash>=10000000)
+                hash%=10000000;
         }
+        hash%=32000000;
         //cout<<",hash值为："<<hash;
         //调整bitmap
         int index=hash/32,pos=hash%32;
+        //cout<<index<<" "<<pos<<endl;
         Bloom_Filter_bitmap[index]|=(1<<pos);
         //cout<<",调整后的："<<Bloom_Filter_bitmap[index]<<endl;
     }
+    mysql_close(con);
     int one=0,zero=0;
     for(auto i:Bloom_Filter_bitmap){
         int b=1;
@@ -127,7 +136,7 @@ int main(){
         cout<<"--------------------------"<<endl;
         cout<<"epoll_wait阻塞中"<<endl;
         //等待epoll事件的发生  
-        nfds=epoll_wait(epfd,events,2000,-1);//最后一个参数是timeout，0:立即返回，-1:一直阻塞直到有事件，x:等待x毫秒
+        nfds=epoll_wait(epfd,events,10000,-1);//最后一个参数是timeout，0:立即返回，-1:一直阻塞直到有事件，x:等待x毫秒
         cout<<"epoll_wait返回，有事件发生"<<endl;
         //处理所发生的所有事件  
         for(i=0;i<nfds;++i)  

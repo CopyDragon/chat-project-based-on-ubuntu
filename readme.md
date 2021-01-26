@@ -6,6 +6,7 @@
 CSDN 昵称：你喜欢梅西吗
 
 github 主页：https://github.com/CopyDragon
+
 ---
 
 ## 项目名：chat-project-based-on-ubuntu
@@ -99,7 +100,7 @@ sessionid 大小为 10 位，每位由数字、小写字母、大写字母随机
 
 ### 压力测试思路
 
-client.cpp 会向服务器发起若干个并发连接，并在这些连接上不断对服务器发出登录请求，每次使用的用户名和密码都是随机从本地的 account.txt 文件中抽取，客户端每隔 1 秒钟发动一波攻势。
+client.cpp 会向服务器发起若干个并发连接，并在这些连接上对服务器发出登录请求，每次使用的用户名和密码都是从本地的 account.txt 文件中抽取，具体发动多少轮请求可以自己设置
 
 ### bitmap 实现的布隆过滤器优化：
 

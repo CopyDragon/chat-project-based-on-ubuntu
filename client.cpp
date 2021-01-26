@@ -32,7 +32,7 @@ int main(){
 
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr("172.29.18.134");
+    serv_addr.sin_addr.s_addr = inet_addr("192.168.3.202");
     serv_addr.sin_port = 8000;
 
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)

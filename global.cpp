@@ -16,3 +16,4 @@ double total_time;//线程池处理任务的总时间
 int total_handle;//总处理请求数，用于性能测试
 double top_speed;//记录峰值性能
 int total_recv_request;//接收到的请求总数，性能测试
+int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap

@@ -40,7 +40,7 @@ int main(int argc,char * argv[]){
     vector<int> sock_arr;
     int total_test=atoi(argv[1]);
     for(int i=0;i<total_test;i++){
-        usleep(50000);
+        usleep(40000);
         sock = socket(PF_INET, SOCK_STREAM, 0);
         if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
             ;//cout<<"第"<<i<<"个连接connect() error\n";
@@ -101,8 +101,8 @@ int main(int argc,char * argv[]){
     srand(time(NULL));
     int total_name=name_arr.size();
     //while(1){
-    for(int j=0;j<4;j++){ 
-        sleep(1);
+    for(int j=0;j<2;j++){ 
+        //sleep(1);
         for(int i=0;i<sock_arr.size();i++){
             //if(if_login)
              //   break;
@@ -113,7 +113,7 @@ int main(int argc,char * argv[]){
             if_login=false;
             //登录
             if(choice==1&&!if_login){
-                string name=name_arr[rand()%total_name],pass=name;
+                string name=name_arr[i],pass=name;
                 string str="login"+name+"pass:"+pass;
                 send(sock_arr[i],str.c_str(),str.length(),0);
                 char buffer[1000];

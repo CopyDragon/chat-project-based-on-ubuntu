@@ -16,7 +16,7 @@ extern unordered_map<string,string> from_to_map;//记录用户xx要向用户yy�
 extern int total_handle;//总处理请求数，用于性能测试
 extern int total_recv_request;//接收到的请求总数，性能测试
 extern double top_speed;//峰值性能
-extern int Bloom_Filter_bitmap[100000];//布隆过滤器所用的bitmap
+extern int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
 
 void handle_all_request(string epoll_str,int conn_num,int epollfd){
     time_point<system_clock> begin_clock= system_clock::now();
@@ -120,7 +120,9 @@ void handle_all_request(string epoll_str,int conn_num,int epollfd){
         //对字符串使用哈希函数
         int hash=0;
         for(auto ch:name){
-            hash=(hash*131+ch)%3200000;
+            hash=hash*131+ch;
+            if(hash>=10000000)
+                hash%=10000000;                            
         }
         int index=hash/32,pos=hash%32;
         if((Bloom_Filter_bitmap[index]&(1<<pos))==0){

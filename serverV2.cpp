@@ -13,7 +13,7 @@ using namespace std;
 //#define OPEN_MAX 100
 
 //listen的backlog大小
-#define LISTENQ 50
+#define LISTENQ 200
 //监听端口号
 #define SERV_PORT 8000
 #define INFTIM 1000 
@@ -25,6 +25,7 @@ extern double total_time;//线程池处理任务的总时间
 //extern time_point<system_clock> begin_clock;//开始时间，压力测试
 extern int total_handle;//总处理请求数，用于性能测试
 extern int total_recv_request;//接收到的请求总数，性能测试
+extern int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
 
 //将参数的文件描述符设为非阻塞
 void setnonblocking(int sock)  
@@ -50,9 +51,9 @@ int main(){
     //char line[MAXLINE];  
     socklen_t clilen;  
     //声明epoll_event结构体的变量,ev用于注册事件,数组用于回传要处理的事件  
-    struct epoll_event ev,events[2000];  
+    struct epoll_event ev,events[10000];  
     //生成用于处理accept的epoll专用的文件描述符  
-    epfd=epoll_create(2000);  
+    epfd=epoll_create(10000);  
     struct sockaddr_in clientaddr;  
     struct sockaddr_in serveraddr;  
     listenfd = socket(PF_INET, SOCK_STREAM, 0);  
@@ -73,6 +74,55 @@ int main(){
     listen(listenfd, LISTENQ); 
     clilen=sizeof(clientaddr);
     maxi = 0;   
+    
+    cout<<"准备连数据库\n";
+
+    //连接MYSQL数据库
+    MYSQL *con=mysql_init(NULL);
+    mysql_real_connect(con,"127.0.0.1","root","","test_connect",0,NULL,CLIENT_MULTI_STATEMENTS);
+    string search="SELECT * FROM user;";
+    auto search_res=mysql_query(con,search.c_str());
+    auto result=mysql_store_result(con);
+    int row;
+    if(result)
+        row=mysql_num_rows(result);//获取行数
+
+    cout<<"连接数据库成功\n准备初始化布隆过滤器\n";
+
+    //读取数据并完成布隆过滤器初始化
+    memset(Bloom_Filter_bitmap,0,sizeof(Bloom_Filter_bitmap));
+    for(int i=0;i<row;i++){
+        auto info=mysql_fetch_row(result);//获取一行的信息
+        string read_name=info[0];
+        //对字符串使用哈希函数
+        int hash=0;
+        //cout<<"字符串："<<read_name;
+        for(auto ch:read_name){
+            hash=hash*131+ch;
+            if(hash>=10000000)
+                hash%=10000000;
+        }
+        hash%=32000000;
+        //cout<<",hash值为："<<hash;
+        //调整bitmap
+        int index=hash/32,pos=hash%32;
+        //cout<<index<<" "<<pos<<endl;
+        Bloom_Filter_bitmap[index]|=(1<<pos);
+        //cout<<",调整后的："<<Bloom_Filter_bitmap[index]<<endl;
+    }
+    mysql_close(con);
+    int one=0,zero=0;
+    for(auto i:Bloom_Filter_bitmap){
+        int b=1;
+        for(int j=1;j<=32;j++){
+            if(b&i)
+                one++;
+            else
+                zero++;
+            b=(b<<1);
+        }
+    }
+    cout<<"布隆过滤器中共有"<<one<<"位被置为1，其余"<<zero<<"位仍为0"<<endl;
 
     /* 定义一个100线程的线程池 */
     boost::asio::thread_pool tp(100);
@@ -86,7 +136,7 @@ int main(){
         cout<<"--------------------------"<<endl;
         cout<<"epoll_wait阻塞中"<<endl;
         //等待epoll事件的发生  
-        nfds=epoll_wait(epfd,events,2000,-1);//最后一个参数是timeout，0:立即返回，-1:一直阻塞直到有事件，x:等待x毫秒
+        nfds=epoll_wait(epfd,events,10000,-1);//最后一个参数是timeout，0:立即返回，-1:一直阻塞直到有事件，x:等待x毫秒
         cout<<"epoll_wait返回，有事件发生"<<endl;
         //处理所发生的所有事件  
         for(i=0;i<nfds;++i)  
