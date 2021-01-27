@@ -23,6 +23,7 @@
 #include<sys/epoll.h>
 #include<fcntl.h>
 #include<unistd.h>
+#include<queue>
 #include<chrono>
 #include<boost/bind.hpp>
 #include<boost/asio.hpp>
@@ -40,6 +41,16 @@ extern int total_handle;//总处理请求数，用于性能测试
 extern double top_speed;//记录峰值性能
 extern int total_recv_request;//接收到的请求总数，性能测试
 extern int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
+extern queue<int> mission_queue;//任务队列
+extern int mission_num;//任务队列中的任务数量
+extern pthread_cond_t mission_cond;//线程池所需的条件变量
+extern pthread_mutex_t name_mutex;//互斥锁，锁住需要修改name_sock_map的临界区
+extern pthread_mutex_t from_mutex;//互斥锁，锁住修改from_to_map的临界区
+extern pthread_mutex_t group_mutex;//互斥锁，锁住修改group_map的临界区
+extern pthread_mutex_t queue_mutex;//互斥锁，锁住修改任务队列的临界区
+extern int epollfd;
+extern pthread_mutex_t count_mutex;
+
 
 
 #endif

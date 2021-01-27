@@ -17,3 +17,18 @@ int total_handle;//总处理请求数，用于性能测试
 double top_speed;//记录峰值性能
 int total_recv_request;//接收到的请求总数，性能测试
 int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
+queue<int> mission_queue;//任务队列
+int mission_num;//任务队列中的任务数量
+pthread_cond_t mission_cond;//线程池所需的条件变量
+pthread_mutex_t name_mutex;//互斥锁，锁住需要修改name_sock_map的临界区
+pthread_mutex_t from_mutex;//互斥锁，锁住修改from_to_map的临界区
+pthread_mutex_t group_mutex;//互斥锁，锁住修改group_map的临界区
+pthread_mutex_t queue_mutex;//互斥锁，锁住修改任务队列的临界区
+int epollfd;
+pthread_mutex_t count_mutex;
+
+
+
+
+
+

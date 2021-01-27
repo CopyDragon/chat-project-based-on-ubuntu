@@ -18,7 +18,8 @@ using namespace std;
 #define SERV_PORT 8000
 #define INFTIM 1000 
 
-extern void handle_all_request(string epoll_str,int conn_num,int epollfd);
+//extern void handle_all_request(string epoll_str,int conn_num,int epollfd);
+extern void* handle_all_request(void *arg);
 extern unordered_map<string,int> name_sock_map;//记录名字和套接字描述符
 //extern clock_t begin_clock;//开始时间，用于性能测试，有bug
 extern double total_time;//线程池处理任务的总时间
@@ -26,6 +27,15 @@ extern double total_time;//线程池处理任务的总时间
 extern int total_handle;//总处理请求数，用于性能测试
 extern int total_recv_request;//接收到的请求总数，性能测试
 extern int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
+extern queue<int> mission_queue;//任务队列
+extern int mission_num;//任务队列中的任务数量
+extern pthread_cond_t mission_cond;//线程池所需的条件变量
+extern pthread_mutex_t name_mutex;//互斥锁，锁住需要修改name_sock_map的临界区
+extern pthread_mutex_t from_mutex;//互斥锁，锁住修改from_to_map的临界区
+extern pthread_mutex_t group_mutex;//互斥锁，锁住修改group_map的临界区
+extern pthread_mutex_t queue_mutex;//互斥锁，锁住修改任务队列的临界区
+extern int epollfd;
+extern pthread_mutex_t count_mutex;
 
 //将参数的文件描述符设为非阻塞
 void setnonblocking(int sock)  
@@ -46,6 +56,13 @@ void setnonblocking(int sock)
 }  
 
 int main(){
+    pthread_mutex_init(&name_mutex, NULL); //创建互斥锁
+    pthread_mutex_init(&group_mutex,NULL);//创建互斥锁
+    pthread_mutex_init(&queue_mutex,NULL);
+    pthread_mutex_init(&count_mutex,NULL);
+    pthread_mutex_init(&from_mutex,NULL);
+    pthread_cond_init(&mission_cond,NULL);//初始化条件变量
+
     int i, maxi, listenfd, connfd, sockfd,epfd,nfds;  
     ssize_t n;  
     //char line[MAXLINE];  
@@ -53,7 +70,8 @@ int main(){
     //声明epoll_event结构体的变量,ev用于注册事件,数组用于回传要处理的事件  
     struct epoll_event ev,events[10000];  
     //生成用于处理accept的epoll专用的文件描述符  
-    epfd=epoll_create(10000);  
+    epfd=epoll_create(10000);
+    epollfd=epfd;
     struct sockaddr_in clientaddr;  
     struct sockaddr_in serveraddr;  
     listenfd = socket(PF_INET, SOCK_STREAM, 0);  
@@ -125,7 +143,12 @@ int main(){
     cout<<"布隆过滤器中共有"<<one<<"位被置为1，其余"<<zero<<"位仍为0"<<endl;
 
     /* 定义一个10线程的线程池 */
-    boost::asio::thread_pool tp(10);
+    //boost::asio::thread_pool tp(10);
+
+    //10个线程的线程池
+    pthread_t tid[10];
+    for(int i=0;i<10;i++)
+        pthread_create(&tid[i],NULL,handle_all_request,NULL);
 
     //压力测试
     total_time=0;
@@ -168,8 +191,14 @@ int main(){
                 sockfd = events[i].data.fd;
                 events[i].data.fd=-1;
                 cout<<"接收到读事件"<<endl;
-                string recv_str;
-                boost::asio::post(boost::bind(handle_all_request,recv_str,sockfd,epfd)); //加入任务队列，处理事件
+                
+                pthread_mutex_lock(&queue_mutex);
+                mission_queue.push(sockfd);//加入任务队列
+                pthread_cond_broadcast(&mission_cond);//广播唤醒
+                pthread_mutex_unlock(&queue_mutex);
+
+                //string recv_str;
+                //boost::asio::post(boost::bind(handle_all_request,recv_str,sockfd,epfd)); //加入任务队列，处理事件
             }  
         } 
     }  

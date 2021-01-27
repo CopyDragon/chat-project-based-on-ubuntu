@@ -24,7 +24,7 @@
 using namespace std;
 
 //线程执行此函数，处理请求
-void handle_all_request(string,int);
-
+//void handle_all_request(string,int);
+void* handle_all_request(void *arg);
 
 #endif

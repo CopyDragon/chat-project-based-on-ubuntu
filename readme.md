@@ -13,7 +13,7 @@ github 主页：https://github.com/CopyDragon
 
 ### 介绍
 
-使用 C++实现的 ubuntu 环境下的聊天小项目，采用 C/S 架构，支持注册、登录、记录登录状态、私聊、群聊功能，前期使用多线程实现并发服务器，后期利用 epoll 监听+boost 库线程池处理的 Reactor 模式实现并发服务器，进行了压力测试，并采用 bitmap 实现的布隆过滤器减少对 MySQL 的查询。
+使用 C++实现的 ubuntu 环境下的聊天小项目，采用 C/S 架构，支持注册、登录、记录登录状态、私聊、群聊功能，前期使用多线程实现并发服务器，后期利用 epoll 监听+线程池处理的 Reactor 模式实现并发服务器，进行了压力测试，并采用 bitmap 实现的布隆过滤器减少对 MySQL 的查询。
 
 项目中使用 TCP 网络编程实现 C/S 的信息交互，使用 Mysql 记录用户账号、密码，使用 redis 记录用户的登录状态，编写了 makefile 进行编译，使用 shell 脚本提高了开发效率，开发过程使用 git 进行版本管理，编写了说明文档。
 
@@ -52,9 +52,9 @@ github 主页：https://github.com/CopyDragon
 
 2、多线程实现并发服务器
 
-3、IO 多路复用+线程池实现并发服务器（使用 epoll 的 ET 边缘触发、EPOLLONESHOT）
+3、IO 多路复用+自己实现的线程池实现并发服务器（使用 epoll 的 ET 边缘触发、EPOLLONESHOT）
 
-4、使用 boost 库的线程池实现并发服务器
+4、使用 boost 线程池实现并发服务器
 
 5、TCP socket 网络编程
 
