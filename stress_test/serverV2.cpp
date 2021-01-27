@@ -124,8 +124,8 @@ int main(){
     }
     cout<<"布隆过滤器中共有"<<one<<"位被置为1，其余"<<zero<<"位仍为0"<<endl;
 
-    /* 定义一个100线程的线程池 */
-    boost::asio::thread_pool tp(100);
+    /* 定义一个10线程的线程池 */
+    boost::asio::thread_pool tp(10);
 
     //压力测试
     total_time=0;
