@@ -1,3 +1,70 @@
+commit a5f05975fa7f5b58f4b60db59b83c28d60cc561e
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 27 18:55:44 2021 +0800
+
+     修改了说明文档
+
+commit a04a13d7f47ed010693c88b51e5dee0f3853f4ad
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 27 18:22:52 2021 +0800
+
+     2021.1.27大型改动：自己利用生产者消费者模型实现了线程池，并且加多了几个互斥锁
+
+commit 67199c7f04d690566b89f64065770eb473f2fa5d
+Author: fyl <838106527@qq.com>
+Date:   Wed Jan 27 16:22:15 2021 +0800
+
+     修改了线程池中的线程数量
+
+commit 4e1b4452f43620fcc0f4b54867562ab956a03379
+Merge: c81ccfb 0e2aec1
+Author: fyl <838106527@qq.com>
+Date:   Tue Jan 26 19:40:53 2021 +0800
+
+    Merge branch 'master' of https://github.com/CopyDragon/chat-project-based-on-ubuntu
+
+commit c81ccfb30e632d6559f58b96b3c2391fcc4cd812
+Author: fyl <838106527@qq.com>
+Date:   Tue Jan 26 19:35:42 2021 +0800
+
+     进行了更多的测试，修改了一些内容
+
+commit 0e2aec100a48aeb435f1f7b95f35cd59efd0dc4b
+Author: fuyinglong <55621210+CopyDragon@users.noreply.github.com>
+Date:   Mon Jan 25 18:22:10 2021 +0800
+
+    Update readme.md
+
+commit 004d91fffbf25092a30be9278f339c6dd0d59b55
+Author: fuyinglong <55621210+CopyDragon@users.noreply.github.com>
+Date:   Mon Jan 25 18:20:00 2021 +0800
+
+    Update readme.md
+
+commit 1ca4c8882d3087dc8bb32afec994e8e3afd51585
+Author: fyl <838106527@qq.com>
+Date:   Mon Jan 25 18:18:20 2021 +0800
+
+     再次修改说明文档格式
+
+commit a00a751ec5b4fef35382e5c82c44f49182a264f8
+Author: fyl <838106527@qq.com>
+Date:   Mon Jan 25 18:13:41 2021 +0800
+
+     修改了说明文档的格式
+
+commit d1e7fec0d36d8e448434a7758a5eda946d6a29ba
+Author: fyl <838106527@qq.com>
+Date:   Mon Jan 25 18:07:53 2021 +0800
+
+     进行了大量压力测试，新增了bitmap实现的布隆过滤器优化，修改了说明文档等
+
+commit ba4ba67dde5e5263ed8415e9936c4cf4604394f3
+Author: fyl <838106527@qq.com>
+Date:   Sat Jan 23 16:04:52 2021 +0800
+
+     修复了没有判断数据库查询结果是否为空导致的内存问题
+
 commit 9ce8948e9f7a88a29c81af03ad6abf9b5f3d0358
 Author: fyl <838106527@qq.com>
 Date:   Sat Jan 23 15:37:16 2021 +0800

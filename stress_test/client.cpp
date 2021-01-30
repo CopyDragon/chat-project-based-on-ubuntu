@@ -40,12 +40,12 @@ int main(int argc,char * argv[]){
     vector<int> sock_arr;
     int total_test=atoi(argv[1]);
     for(int i=0;i<total_test;i++){
-        usleep(40000);
+        usleep(10000);
         sock = socket(PF_INET, SOCK_STREAM, 0);
         if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
-            ;//cout<<"第"<<i<<"个连接connect() error\n";
+            cout<<"第"<<i<<"个连接connect() error\n";
         else{
-            //cout<<"第"<<i<<"个连接成功建立,套接字描述符为"<<sock<<endl;
+            cout<<"第"<<i<<"个连接成功建立,套接字描述符为"<<sock<<endl;
             sock_arr.push_back(sock);
         }   
     }
