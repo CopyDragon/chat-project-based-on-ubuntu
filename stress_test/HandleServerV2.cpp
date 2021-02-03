@@ -20,12 +20,12 @@ extern int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
 extern queue<int> mission_queue;//任务队列
 extern int mission_num;//任务队列中的任务数量
 extern pthread_cond_t mission_cond;//线程池所需的条件变量
-extern pthread_mutex_t name_mutex;//互斥锁，锁住需要修改name_sock_map的临界区
-extern pthread_mutex_t group_mutex;//互斥锁，锁住修改group_map的临界区
-extern pthread_mutex_t from_mutex;//互斥锁，锁住修改from_to_map的临界区
+extern pthread_spinlock_t name_mutex;//互斥锁，锁住需要修改name_sock_map的临界区
+extern pthread_spinlock_t group_mutex;//互斥锁，锁住修改group_map的临界区
+extern pthread_spinlock_t from_mutex;//互斥锁，锁住修改from_to_map的临界区
 extern pthread_mutex_t queue_mutex;//互斥锁，锁住修改任务队列的临界区
 extern int epollfd;
-extern pthread_mutex_t count_mutex;
+extern pthread_spinlock_t count_mutex;
 
 void* handle_all_request(void *arg){   //(string epoll_str,int conn_num,int epollfd){
     while(1){
@@ -40,8 +40,8 @@ void* handle_all_request(void *arg){   //(string epoll_str,int conn_num,int epol
         pthread_mutex_unlock(&queue_mutex);
 
         time_point<system_clock> begin_clock= system_clock::now();
-        //pthread_mutex_init(&mutex, NULL); //创建互斥锁
-        //pthread_mutex_init(&group_mutex,NULL);//创建互斥锁
+        //pthread_spin_init(&mutex, NULL); //创建互斥锁
+        //pthread_spin_init(&group_mutex,NULL);//创建互斥锁
         int conn=conn_num;
         int target_conn=-1;
         char buffer[1000];
@@ -116,9 +116,9 @@ void* handle_all_request(void *arg){   //(string epoll_str,int conn_num,int epol
             if(r->str){
                 cout<<"查询redis结果："<<r->str<<endl;
                 send_res=r->str;
-                pthread_mutex_lock(&name_mutex); //上锁
+                pthread_spin_lock(&name_mutex); //上锁
                 name_sock_map[send_res]=conn;//记录下名字和文件描述符的对应关系
-                pthread_mutex_unlock(&name_mutex); //解锁
+                pthread_spin_unlock(&name_mutex); //解锁
                 //cout<<sizeof(r->str)<<endl;
                 // cout<<send_res.length()<<endl;
             }
@@ -175,9 +175,9 @@ void* handle_all_request(void *arg){   //(string epoll_str,int conn_num,int epol
                         string str1="ok";
                         if_login=true;
                         login_name=name;
-                        pthread_mutex_lock(&name_mutex); //上锁
+                        pthread_spin_lock(&name_mutex); //上锁
                         name_sock_map[name]=conn;//记录下名字和文件描述符的对应关系
-                        pthread_mutex_unlock(&name_mutex); //解锁
+                        pthread_spin_unlock(&name_mutex); //解锁
 
                         //2020.12.9新添加：随机生成sessionid并发送到客户端
                         srand(time(NULL));//初始化随机数种子
@@ -241,9 +241,9 @@ void* handle_all_request(void *arg){   //(string epoll_str,int conn_num,int epol
             if(name_sock_map.find(target)==name_sock_map.end())
                 cout<<"源用户为"<<from<<",目标用户"<<target_name<<"仍未登陆，无法发起私聊\n";
             else{
-                pthread_mutex_lock(&from_mutex);
+                pthread_spin_lock(&from_mutex);
                 from_to_map[from]=target;
-                pthread_mutex_unlock(&from_mutex);
+                pthread_spin_unlock(&from_mutex);
                 login_name=from;
                 cout<<"源用户"<<login_name<<"向目标用户"<<target_name<<"发起的私聊即将建立";
                 cout<<",目标用户的套接字描述符为"<<name_sock_map[target]<<endl;
@@ -294,10 +294,10 @@ void* handle_all_request(void *arg){   //(string epoll_str,int conn_num,int epol
                     break;
                 }
             cout<<"用户"<<login_name<<"绑定群聊号为："<<num_str<<endl;
-            pthread_mutex_lock(&group_mutex);//上锁
+            pthread_spin_lock(&group_mutex);//上锁
             //group_map[group_num].push_back(conn);
             group_map[group_num].insert(conn);
-            pthread_mutex_unlock(&group_mutex);//解锁
+            pthread_spin_unlock(&group_mutex);//解锁
         }
 
         //广播群聊信息
@@ -338,10 +338,10 @@ void* handle_all_request(void *arg){   //(string epoll_str,int conn_num,int epol
         //2021.1.11:性能测试
         auto end_clock   = system_clock::now();
         auto duration = duration_cast<microseconds>(end_clock - begin_clock);
-        pthread_mutex_lock(&count_mutex);
+        pthread_spin_lock(&count_mutex);
         total_time+=double(duration.count()) * microseconds::period::num / microseconds::period::den; 
         total_handle++;
-        pthread_mutex_unlock(&count_mutex);
+        pthread_spin_unlock(&count_mutex);
         //double total_time=(double)(end_clock-begin_clock)/CLOCKS_PER_SEC;
         //cout<<begin_clock<<" "<<end_clock<<endl;
         double now_rate=total_handle/total_time;

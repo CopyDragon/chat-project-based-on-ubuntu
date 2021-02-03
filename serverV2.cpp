@@ -30,12 +30,12 @@ extern int Bloom_Filter_bitmap[1000000];//布隆过滤器所用的bitmap
 extern queue<int> mission_queue;//任务队列
 extern int mission_num;//任务队列中的任务数量
 extern pthread_cond_t mission_cond;//线程池所需的条件变量
-extern pthread_mutex_t name_mutex;//互斥锁，锁住需要修改name_sock_map的临界区
-extern pthread_mutex_t from_mutex;//互斥锁，锁住修改from_to_map的临界区
-extern pthread_mutex_t group_mutex;//互斥锁，锁住修改group_map的临界区
+extern pthread_spinlock_t name_mutex;//互斥锁，锁住需要修改name_sock_map的临界区
+extern pthread_spinlock_t from_mutex;//互斥锁，锁住修改from_to_map的临界区
+extern pthread_spinlock_t group_mutex;//互斥锁，锁住修改group_map的临界区
 extern pthread_mutex_t queue_mutex;//互斥锁，锁住修改任务队列的临界区
 extern int epollfd;
-extern pthread_mutex_t count_mutex;
+extern pthread_spinlock_t count_mutex;
 
 //将参数的文件描述符设为非阻塞
 void setnonblocking(int sock)  
@@ -56,11 +56,11 @@ void setnonblocking(int sock)
 }  
 
 int main(){
-    pthread_mutex_init(&name_mutex, NULL); //创建互斥锁
-    pthread_mutex_init(&group_mutex,NULL);//创建互斥锁
-    pthread_mutex_init(&queue_mutex,NULL);
-    pthread_mutex_init(&count_mutex,NULL);
-    pthread_mutex_init(&from_mutex,NULL);
+    pthread_spin_init(&name_mutex, 0); //创建互斥锁
+    pthread_spin_init(&group_mutex,0);//创建互斥锁
+    pthread_mutex_init(&queue_mutex,0);
+    pthread_spin_init(&count_mutex,0);
+    pthread_spin_init(&from_mutex,0);
     pthread_cond_init(&mission_cond,NULL);//初始化条件变量
 
     int i, maxi, listenfd, connfd, sockfd,epfd,nfds;  
