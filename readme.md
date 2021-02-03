@@ -64,7 +64,7 @@ github 主页：https://github.com/CopyDragon
 
 8、session、cookie（利用 redis 保存 session 对象，服务器随机生成 sessionid 发往客户端保存到 cookie)
 
-9、线程互斥锁
+9、线程互斥锁、自旋锁、条件变量
 
 10、makefile 编译
 
