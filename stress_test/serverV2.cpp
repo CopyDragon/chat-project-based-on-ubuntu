@@ -87,7 +87,7 @@ int main(){
     bzero(&serveraddr, sizeof(serveraddr));  
     serveraddr.sin_family = AF_INET;  
     serveraddr.sin_addr.s_addr = inet_addr("192.168.3.202");//此处设为服务器的ip
-    serveraddr.sin_port=8000;  
+    serveraddr.sin_port=htons(8023);  
     bind(listenfd,(sockaddr *)&serveraddr, sizeof(serveraddr));  
     listen(listenfd, LISTENQ); 
     clilen=sizeof(clientaddr);

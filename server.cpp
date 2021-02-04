@@ -25,7 +25,7 @@ int main(){
     memset(&serv_adr, 0, sizeof(serv_adr));
     serv_adr.sin_family = AF_INET;//使用地址族
     serv_adr.sin_addr.s_addr = inet_addr("172.29.18.134");//ip地址
-    serv_adr.sin_port = 8000;//端口号
+    serv_adr.sin_port = htons(8023);//端口号
 
     if (bind(serv_sock, (struct sockaddr *)&serv_adr, sizeof(serv_adr)) == -1)
          cout<<"bind() error";

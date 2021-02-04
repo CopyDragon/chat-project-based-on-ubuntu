@@ -34,7 +34,7 @@ int main(int argc,char * argv[]){
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = inet_addr("192.168.3.202");
-    serv_addr.sin_port = 8000;
+    serv_addr.sin_port = htons(8023);
 
     //2021.1.21：用于压力测试，建立若干个到服务器的连接
     vector<int> sock_arr;
